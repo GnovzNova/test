@@ -3,604 +3,602 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Đêm Rằm Trung Thu - Lồng Đèn Ước Nguyện 🌕</title>
+    <title>Trung Thu Rằm Tháng Tám - Đêm Trăng Tròn 🌕</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             background: #02050e;
             overflow: hidden;
             width: 100vw; height: 100vh;
-            font-family: 'Segoe UI', Arial, sans-serif;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             user-select: none;
         }
 
-        /* 1. KHUNG CẢNH MẶT TRĂNG (SẼ PULL BACK ZOOM OUT THÀNH QUẢ CẦU) */
-        #moon-viewport {
-            position: absolute;
-            width: 100vw; height: 100vh;
+        /* MÀN HÌNH INTRO */
+        #intro-screen {
+            position: fixed;
             top: 0; left: 0;
-            background: radial-gradient(circle at 50% 50%, #1c2636 0%, #080d1a 70%, #02050e 100%);
-            clip-path: circle(150% at 50% 50%);
-            transition: transform 3.5s cubic-bezier(0.25, 1, 0.5, 1), 
-                        clip-path 3.5s cubic-bezier(0.25, 1, 0.5, 1),
-                        filter 2.5s ease;
-            z-index: 5;
+            width: 100vw; height: 100vh;
+            background: radial-gradient(circle at center, #1e272e 0%, #02050e 100%);
+            z-index: 100;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: #ffeaa7;
+            text-align: center;
+            transition: opacity 1s ease, visibility 1s ease;
         }
 
-        /* TRẠNG THÁI PULL BACK ZOOM OUT KHI CLICK ĐỦ 3 LẦN */
-        #moon-viewport.zoomed-out {
-            transform: scale(0.22) translateY(-110vh);
+        #intro-screen.hidden {
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+        }
+
+        .intro-title {
+            font-size: 2.8rem;
+            margin-bottom: 15px;
+            text-shadow: 0 0 20px #fdcb6e;
+        }
+
+        .intro-btn {
+            padding: 14px 36px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #2d3436;
+            background: linear-gradient(45deg, #ffeaa7, #fdcb6e);
+            border: none;
+            border-radius: 30px;
+            cursor: pointer;
+            box-shadow: 0 0 25px rgba(253, 203, 110, 0.6);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .intro-btn:hover {
+            transform: scale(1.08);
+            box-shadow: 0 0 35px rgba(253, 203, 110, 0.9);
+        }
+
+        /* THẾ GIỚI MẶT TRĂNG (VIEWPORT CHÍNH) */
+        #moon-world {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100vw; height: 100vh;
+            background: radial-gradient(circle at 50% 30%, #1a2536 0%, #090e17 70%, #02050e 100%);
+            transform-origin: 50% 30%;
+            transition: transform 3.8s cubic-bezier(0.25, 1, 0.3, 1),
+                        clip-path 3.8s cubic-bezier(0.25, 1, 0.3, 1),
+                        border-radius 3.8s ease,
+                        filter 2s ease;
+            z-index: 10;
+        }
+
+        /* TRẠNG THÁI ZOOM OUT THU NHỎ THÀNH QUẢ CẦU TRĂNG RẰM */
+        #moon-world.zoom-out-to-moon {
+            transform: scale(0.22) translateY(-85vh);
             clip-path: circle(40% at 50% 50%);
-            filter: drop-shadow(0 0 50px #fff1a0) drop-shadow(0 0 100px #fdcb6e);
+            border-radius: 50%;
+            filter: drop-shadow(0 0 60px #ffffff) drop-shadow(0 0 120px #ffeaa7);
         }
 
-        #moon-viewport.brighten {
-            filter: brightness(1.7) drop-shadow(0 0 40px rgba(255, 241, 160, 0.8));
+        /* BỀ MẶT TRĂNG BỪNG SÁNG RỰC RỠ */
+        #moon-ground.brighten {
+            filter: brightness(2.2) drop-shadow(0 0 40px #ffeaa7);
+            transition: filter 1.5s ease-in-out;
         }
 
-        /* CANVAS ĐOM ĐÓM / SAO LẤP LÁNH */
-        #particle-canvas {
+        /* KHU VỰC CHỨA LỒNG ĐÈN */
+        #lantern-container {
             position: absolute;
             top: 0; left: 0;
             width: 100%; height: 100%;
-            z-index: 2;
+            z-index: 20;
             pointer-events: none;
         }
 
-        /* HƯỚNG DẪN TRÊN TRỜI */
-        .intro-hint {
+        .floating-lantern {
             position: absolute;
-            top: 8%; left: 50%;
-            transform: translateX(-50%);
-            color: #ffeaa7;
-            font-size: 1.2rem;
-            font-weight: bold;
-            text-align: center;
-            background: rgba(8, 13, 26, 0.6);
-            padding: 8px 20px;
-            border-radius: 25px;
-            border: 1px solid rgba(254, 202, 87, 0.4);
-            box-shadow: 0 0 15px rgba(254, 202, 87, 0.3);
-            z-index: 10;
-            transition: opacity 1s ease;
-            animation: pulse 2s infinite alternate;
-        }
-
-        @keyframes pulse {
-            0% { transform: translateX(-50%) scale(0.98); }
-            100% { transform: translateX(-50%) scale(1.03); }
-        }
-
-        /* 2. THIẾT KẾ ĐÈN LỒNG CHI TIẾT (LỤA ĐỎ VÀNG TRUYỀN THỐNG + TUA RUA) */
-        .lantern-item {
-            position: absolute;
-            bottom: -150px;
+            width: 65px; height: 95px;
             cursor: pointer;
-            z-index: 12;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            transition: transform 0.2s ease, filter 0.2s ease;
-            filter: drop-shadow(0 0 12px rgba(255, 118, 117, 0.8));
-            animation: flyUp 14s linear forwards;
+            pointer-events: auto;
+            animation: floatUp 12s linear forwards, sway 3s ease-in-out infinite alternate;
+            filter: drop-shadow(0 0 15px #ff7675);
+            transition: opacity 0.5s, transform 0.5s;
         }
 
-        .lantern-item:hover {
-            transform: scale(1.15) !important;
-            filter: drop-shadow(0 0 25px #fdcb6e) drop-shadow(0 0 35px #ff7675) !important;
+        .floating-lantern.fly-away {
+            transform: translateY(-120vh) !important;
+            opacity: 0;
+            transition: transform 3s ease-in, opacity 2s ease-in;
         }
 
-        @keyframes flyUp {
-            0% { transform: translateY(0) rotate(-2deg); opacity: 0; }
-            10% { opacity: 1; }
-            50% { transform: translateY(-50vh) rotate(3deg); }
-            100% { transform: translateY(-115vh) rotate(-2deg); opacity: 0.9; }
-        }
-
-        .tassel {
-            animation: sway 2s ease-in-out infinite alternate;
-            transform-origin: top center;
+        @keyframes floatUp {
+            0% { transform: translateY(110vh); }
+            100% { transform: translateY(-20vh); }
         }
 
         @keyframes sway {
-            0% { transform: rotate(-8deg); }
-            100% { transform: rotate(8deg); }
+            0% { margin-left: -15px; }
+            100% { margin-left: 15px; }
         }
 
-        /* 3. BẢNG LỜI CHÚC (CUỘN THƯ CỔ PHONG CHÍNH GIỮA) */
-        .wish-modal {
-            position: absolute;
-            top: 50%; left: 50%;
-            transform: translate(-50%, -50%) scale(0);
-            background: linear-gradient(135deg, #fff3e0 0%, #ffe0b2 100%);
-            border: 3px solid #d32f2f;
-            outline: 2px solid #ffb300;
-            border-radius: 16px;
-            padding: 25px 35px;
-            text-align: center;
-            box-shadow: 0 0 40px rgba(255, 179, 0, 0.8), inset 0 0 15px rgba(211, 47, 47, 0.2);
-            z-index: 30;
-            width: 85%;
-            max-width: 480px;
-            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.3s ease;
+        /* POPUP LỜI CHÚC (CUỘN THƯ CỔ PHONG) */
+        #wish-modal {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100vw; height: 100vh;
+            background: rgba(0, 0, 0, 0.65);
+            backdrop-filter: blur(5px);
+            z-index: 200;
+            display: flex;
+            justify-content: center;
+            align-items: center;
             opacity: 0;
-            pointer-events: none;
+            visibility: hidden;
+            transition: opacity 0.4s ease, visibility 0.4s ease;
         }
 
-        .wish-modal.active {
-            transform: translate(-50%, -50%) scale(1);
+        #wish-modal.active {
             opacity: 1;
-            pointer-events: auto;
+            visibility: visible;
         }
 
-        .wish-modal h3 {
-            color: #b71c1c;
+        .scroll-card {
+            width: 320px;
+            background: #fff8e7;
+            border: 4px solid #b2bec3;
+            border-image: linear-gradient(to bottom, #d63031, #e17055) 1;
+            padding: 25px 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 30px rgba(255, 118, 117, 0.8);
+            text-align: center;
+            transform: scale(0.7);
+            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        #wish-modal.active .scroll-card {
+            transform: scale(1);
+        }
+
+        .scroll-title {
+            color: #d63031;
             font-size: 1.4rem;
             margin-bottom: 12px;
-            border-bottom: 2px stroke #ffe0b2;
-            padding-bottom: 6px;
-            font-family: 'Georgia', serif;
-        }
-
-        .wish-modal p {
-            color: #3e2723;
-            font-size: 1.15rem;
-            line-height: 1.6;
-            font-weight: 600;
-        }
-
-        .wish-modal button {
-            margin-top: 18px;
-            background: linear-gradient(to right, #d32f2f, #b71c1c);
-            color: #fff;
-            border: none;
-            padding: 8px 24px;
-            border-radius: 20px;
             font-weight: bold;
+        }
+
+        .scroll-text {
+            color: #2d3436;
+            font-size: 1.1rem;
+            line-height: 1.6;
+            margin-bottom: 20px;
+        }
+
+        .close-btn {
+            padding: 8px 24px;
+            background: #d63031;
+            color: white;
+            border: none;
+            border-radius: 20px;
             cursor: pointer;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-            transition: transform 0.2s;
+            font-weight: bold;
+            box-shadow: 0 4px 10px rgba(214, 48, 49, 0.4);
         }
 
-        .wish-modal button:hover {
-            transform: scale(1.08);
-            background: #e53935;
-        }
-
-        /* 4. CẢNH TRÁI ĐẤT & BÓNG 2 NGƯỜI KHI ZOOM OUT (OUTRO) */
-        .earth-scene {
+        /* CẢNH TRÁI ĐẤT PHÍA DƯỚI (OUTRO) */
+        #earth-world {
             position: absolute;
-            bottom: -100%; left: 0;
+            bottom: 0; left: 0;
             width: 100vw; height: 100vh;
-            z-index: 6;
-            transition: bottom 2.5s ease-in-out;
+            z-index: 5;
+            opacity: 0;
+            transition: opacity 2s ease;
             pointer-events: none;
         }
 
-        .earth-scene.active {
-            bottom: 0;
+        #earth-world.active {
+            opacity: 1;
         }
 
-        .ground-earth {
+        .earth-ground {
             position: absolute;
             bottom: 0; left: 0;
-            width: 100vw; height: 150px;
-            background: #02050e;
+            width: 100vw; height: 180px;
+            background: linear-gradient(to top, #02050e 70%, transparent 100%);
         }
 
         .couple-silhouette {
             position: absolute;
-            bottom: 30px; left: 50%;
+            bottom: 25px; left: 50%;
             transform: translateX(-50%);
-            z-index: 7;
+            z-index: 6;
         }
 
-        /* CANVAS PHÁO HOA */
         #fireworks-canvas {
             position: absolute;
             top: 0; left: 0;
             width: 100vw; height: 100vh;
-            z-index: 8;
+            z-index: 15;
             pointer-events: none;
         }
 
-        /* ELEMENT BỀ MẶT MẶT TRĂNG (HẰNG NGA, CÂY ĐA, CUỘI, THỎ) */
-        .hang-nga {
+        /* VẬT THỂ TRÊN MẶT TRĂNG */
+        .hang-nga-container {
             position: absolute;
-            top: 15%; right: 18%;
-            z-index: 4;
-            animation: floatHangNga 4s ease-in-out infinite alternate;
+            top: 18%; right: 15%;
+            z-index: 12;
+            animation: floatGently 4s ease-in-out infinite alternate;
         }
 
-        @keyframes floatHangNga {
+        @keyframes floatGently {
             0% { transform: translateY(0); }
-            100% { transform: translateY(-15px); }
+            100% { transform: translateY(-18px); }
         }
 
-        .banyan-and-cuoi {
+        .banyan-tree {
             position: absolute;
-            bottom: 0; right: 0;
-            width: 550px; height: 600px;
-            z-index: 4;
+            bottom: 0; right: -20px;
+            width: 500px; height: 550px;
+            z-index: 11;
         }
 
-        .rabbit {
+        .rabbit-gem {
             position: absolute;
-            bottom: 35px; left: 15%;
-            z-index: 4;
-        }
-
-        .ground-moon {
-            position: absolute;
-            bottom: 0; left: 0;
-            width: 100vw; height: 130px;
-            z-index: 3;
+            bottom: 40px; left: 18%;
+            z-index: 11;
         }
     </style>
 </head>
 <body>
 
-    <!-- BỀ MẶT MẶT TRĂNG (KHI OUTRO SẼ PULL BACK THU NHỎ THÀNH QUẢ CẦU) -->
-    <div id="moon-viewport">
-        <canvas id="particle-canvas"></canvas>
+    <!-- MÀN HÌNH INTRO -->
+    <div id="intro-screen">
+        <h1 class="intro-title">🌕 Trung Thu Yêu Thương 🌕</h1>
+        <p style="margin-bottom: 25px; opacity: 0.9;">Hãy thả lòng và chạm vào những chiếc lồng đèn trên cao...</p>
+        <button class="intro-btn" onclick="startExperience()">Bắt Đầu Ngắm Trăng</button>
+    </div>
 
-        <div class="intro-hint" id="introHint">
-            🏮 Hãy thả và chạm vào 3 Đèn Lồng ước nguyện để nhận Lời Chúc (0/3)
-        </div>
-
-        <!-- ĐẤT MẶT TRĂNG -->
-        <svg class="ground-moon" viewBox="0 0 1440 130" preserveAspectRatio="none">
-            <path d="M0,50 Q360,100 720,40 Q1080,0 1440,50 L1440,130 L0,130 Z" fill="#18202a"/>
-            <path d="M0,70 Q400,30 800,80 Q1200,130 1440,60 L1440,130 L0,130 Z" fill="#0d131d" opacity="0.8"/>
+    <!-- KHU VỰC BỀ MẶT MẶT TRĂNG -->
+    <div id="moon-world">
+        <!-- ĐÁY/ĐẤT MẶT TRĂNG -->
+        <svg id="moon-ground" style="position: absolute; bottom: 0; left: 0; width: 100vw; height: 140px; z-index: 10;" viewBox="0 0 1440 140" preserveAspectRatio="none">
+            <path d="M0,60 Q360,110 720,50 Q1080,10 1440,60 L1440,140 L0,140 Z" fill="#1c2536"/>
+            <path d="M0,80 Q400,40 800,90 Q1200,140 1440,70 L1440,140 L0,140 Z" fill="#0f172a" opacity="0.9"/>
         </svg>
 
-        <!-- CHỊ HẰNG NGA -->
-        <div class="hang-nga">
-            <svg width="140" height="160" viewBox="0 0 180 200">
-                <path d="M 20,120 Q 10,20 90,15 Q 170,10 160,100 Q 150,170 80,185 Q 20,190 30,130" fill="none" stroke="#ff7675" stroke-width="3.5" opacity="0.8"/>
-                <path d="M 80,85 L 40,180 Q 90,195 135,175 L 100,85 Z" fill="#fd79a8"/>
-                <path d="M 82,85 L 55,178 Q 88,188 120,175 L 98,85 Z" fill="#ffffff" opacity="0.85"/>
-                <circle cx="90" cy="42" r="10" fill="#ffeaa7"/>
-                <ellipse cx="90" cy="26" rx="7" ry="9" fill="#2d3436"/>
+        <!-- HẰNG NGA NGUYÊN KHỐI HOÀN CHỈNH -->
+        <div class="hang-nga-container">
+            <svg width="160" height="200" viewBox="0 0 160 200">
+                <!-- Dải lụa thắt lưng bay -->
+                <path d="M 30,120 Q 10,60 80,30 Q 150,20 130,110 Q 110,170 50,160" fill="none" stroke="#ff7675" stroke-width="4" stroke-linecap="round" opacity="0.85"/>
+                <!-- Váy lụa dài -->
+                <path d="M 70,80 L 35,185 Q 80,200 125,180 L 95,80 Z" fill="#fd79a8"/>
+                <path d="M 72,80 L 50,183 Q 80,192 110,180 L 90,80 Z" fill="#ffffff" opacity="0.8"/>
+                <!-- Thân áo & Tay áo -->
+                <path d="M 60,60 Q 80,50 100,60 L 110,90 Q 80,100 50,90 Z" fill="#ffeaa7"/>
+                <path d="M 50,65 Q 30,85 20,105 Q 35,110 55,90 Z" fill="#fd79a8"/>
+                <path d="M 110,65 Q 130,85 140,105 Q 125,110 105,90 Z" fill="#fd79a8"/>
+                <!-- Đầu & Tóc -->
+                <circle cx="80" cy="40" r="12" fill="#ffeaa7"/>
+                <path d="M 68,38 C 68,22 92,22 92,38 C 92,28 68,28 68,38 Z" fill="#2d3436"/>
+                <circle cx="80" cy="22" r="7" fill="#2d3436"/>
+                <!-- Trâm cài & Đèn ngọc -->
+                <line x1="70" y1="20" x2="92" y2="20" stroke="#fdcb6e" stroke-width="2"/>
+                <circle cx="80" cy="75" r="8" fill="#fff" filter="drop-shadow(0 0 6px #ffeaa7)"/>
             </svg>
         </div>
 
         <!-- CÂY ĐA VÀ CHÚ CUỘI -->
-        <svg class="banyan-and-cuoi" viewBox="0 0 600 650">
-            <defs>
-                <linearGradient id="trunkGrad" x1="0" y1="0" x2="1" y2="0">
-                    <stop offset="0%" stop-color="#1a0d06"/>
-                    <stop offset="50%" stop-color="#361c0c"/>
-                    <stop offset="100%" stop-color="#0f0703"/>
-                </linearGradient>
-            </defs>
-            <path d="M 150,250 Q 80,80 240,30 Q 400,-20 540,50 Q 620,150 560,280 Q 500,380 380,330 Q 260,400 150,250 Z" fill="#07190b"/>
-            <path d="M 190,220 Q 140,90 260,50 Q 370,10 490,60 Q 560,140 500,250 Q 420,320 300,290 Z" fill="#0f3014"/>
-            <path d="M 400,650 C 370,500 320,350 290,260 C 260,180 220,150 200,140 L 235,130 C 260,160 295,220 330,300 C 380,420 420,530 520,650 Z" fill="url(#trunkGrad)"/>
-            <path d="M 280,240 Q 230,420 210,650" stroke="#1a0d06" stroke-width="8" fill="none" stroke-linecap="round"/>
-
-            <!-- CUỘI THỔI SÁO -->
-            <g transform="translate(250, 470)">
-                <path d="M 10,110 C 10,90 35,80 65,80 C 95,80 110,90 110,110 C 90,125 30,125 10,110 Z" fill="#2b1a0d"/> 
-                <path d="M 30,50 C 25,70 30,95 40,100 L 85,100 C 95,95 95,70 90,50 C 75,40 45,40 30,50 Z" fill="#6e421f"/>
-                <circle cx="60" cy="30" r="13" fill="#ffeaa7"/>
-                <circle cx="60" cy="13" r="5" fill="#2d3436"/>
-                <line x1="15" y1="35" x2="105" y2="28" stroke="#f1c40f" stroke-width="4.5" stroke-linecap="round"/>
-                <path d="M 40,65 Q 48,42 54,34" stroke="#ffeaa7" stroke-width="5" stroke-linecap="round" fill="none"/>
-                <path d="M 80,65 Q 70,42 66,34" stroke="#ffeaa7" stroke-width="5" stroke-linecap="round" fill="none"/>
+        <svg class="banyan-tree" viewBox="0 0 500 550">
+            <path d="M 120,220 Q 60,70 210,30 Q 360,-20 480,40 Q 540,140 490,260 Q 430,350 320,300 Z" fill="#0b1a10"/>
+            <path d="M 350,550 C 320,420 280,300 250,220 C 220,150 180,120 160,110 L 190,100 C 220,130 250,180 280,250 C 330,360 370,450 450,550 Z" fill="#2d1500"/>
+            <!-- Chú Cuội -->
+            <g transform="translate(210, 400)">
+                <ellipse cx="40" cy="80" rx="25" ry="15" fill="#1e1005"/>
+                <path d="M 25,45 C 20,60 25,80 35,85 L 70,85 C 80,80 80,60 75,45 Z" fill="#5c3a21"/>
+                <circle cx="50" cy="28" r="11" fill="#ffeaa7"/>
+                <line x1="10" y1="32" x2="85" y2="26" stroke="#f1c40f" stroke-width="4" stroke-linecap="round"/>
             </g>
         </svg>
 
         <!-- THỎ NGỌC -->
-        <div class="rabbit">
-            <svg width="80" height="90" viewBox="0 0 100 110">
-                <circle cx="20" cy="80" r="7" fill="#ffffff"/>
-                <ellipse cx="45" cy="78" rx="25" ry="18" fill="#ffffff"/>
-                <circle cx="62" cy="50" r="18" fill="#ffffff"/>
-                <ellipse cx="54" cy="20" rx="5" ry="18" fill="#ffffff" transform="rotate(-10 54 20)"/>
-                <ellipse cx="66" cy="18" rx="5" ry="19" fill="#ffffff" transform="rotate(8 66 18)"/>
-            </svg>
-        </div>
+        <svg class="rabbit-gem" width="70" height="80" viewBox="0 0 100 110">
+            <ellipse cx="45" cy="78" rx="25" ry="18" fill="#ffffff"/>
+            <circle cx="62" cy="50" r="16" fill="#ffffff"/>
+            <ellipse cx="55" cy="22" rx="5" ry="16" fill="#ffffff" transform="rotate(-10 55 22)"/>
+            <ellipse cx="66" cy="20" rx="5" ry="17" fill="#ffffff" transform="rotate(8 66 20)"/>
+        </svg>
 
-        <!-- CONTAINER CHỨA CÁC ĐÈN LỒNG BAY NĂNG ĐỘNG -->
-        <div id="lanterns-container"></div>
+        <!-- CHỨA LỒNG ĐÈN BAY -->
+        <div id="lantern-container"></div>
     </div>
 
-    <!-- 3. CUỘN THƯ BẢNG LỜI CHÚC MODAL -->
-    <div class="wish-modal" id="wishModal">
-        <h3 id="modalTitle">🌕 Lời Chúc Ước Nguyện 🌕</h3>
-        <p id="modalContent">Nội dung lời chúc...</p>
-        <button onclick="closeWishModal()">Mở Lồng Đèn Tiếp 🏮</button>
-    </div>
-
-    <!-- 4. KHUNG CẢNH TRÁI ĐẤT & BÓNG 2 NGƯỜI (OUTRO) -->
-    <div class="earth-scene" id="earthScene">
-        <div class="ground-earth"></div>
-        <svg class="couple-silhouette" width="160" height="120" viewBox="0 0 160 120">
-            <circle cx="65" cy="35" r="14" fill="#000000"/>
-            <path d="M 40,120 C 40,70 55,55 75,55 C 80,55 85,70 85,120 Z" fill="#000000"/>
-            <circle cx="88" cy="42" r="12" fill="#000000"/>
-            <path d="M 75,120 C 75,75 85,62 105,65 C 115,75 110,90 115,120 Z" fill="#000000"/>
+    <!-- KHUNG CẢNH TRÁI ĐẤT & BÓNG 2 NGƯỜI (OUTRO) -->
+    <div id="earth-world">
+        <div class="earth-ground"></div>
+        <svg class="couple-silhouette" width="180" height="130" viewBox="0 0 180 130">
+            <!-- Bóng người nam -->
+            <circle cx="70" cy="40" r="15" fill="#02050e"/>
+            <path d="M 45,130 C 45,75 60,60 80,60 C 85,60 90,75 90,130 Z" fill="#02050e"/>
+            <!-- Bóng người nữ dựa vai -->
+            <circle cx="95" cy="48" r="13" fill="#02050e"/>
+            <path d="M 80,130 C 80,82 90,70 110,72 C 120,82 115,98 120,130 Z" fill="#02050e"/>
         </svg>
     </div>
 
-    <!-- CANVAS BẮN PHÁO HOA TRÊN BẦU TRỜI TRÁI ĐẤT -->
+    <!-- CANVAS PHÁO HOA TỰ NHIÊN -->
     <canvas id="fireworks-canvas"></canvas>
 
+    <!-- POPUP LỜI CHÚC -->
+    <div id="wish-modal">
+        <div class="scroll-card">
+            <div class="scroll-title" id="scrollTitle">✨ LỜI CHÚC TRUNG THU ✨</div>
+            <div class="scroll-text" id="scrollText">...</div>
+            <button class="close-btn" onclick="closeWishModal()">Xác Nhận 🥮</button>
+        </div>
+    </div>
+
     <script>
-        // DANH SÁCH 3 LỜI CHÚC THEO THỨ TỰ CỐ ĐỊNH 1 -> 2 -> 3
+        // CÁC LỜI CHÚC THEO THỨ TỰ CỐ ĐỊNH 1 - 2 - 3
         const wishList = [
-            { title: "🌕 Lời Chúc Thứ Nhất 🌕", text: "Chúc bạn một mùa Trung Thu ấm áp, đong đầy yêu thương và niềm vui bên gia đình!" },
-            { title: "⭐ Lời Chúc Thứ Hai ⭐", text: "Mong mọi điều may mắn, an lành, hạnh phúc và bình yên nhất sẽ luôn đến với bạn!" },
-            { title: "🥮 Lời Chúc Thứ Ba 🥮", text: "Trăng rằm chiếu sáng những ước mơ, chúc bạn gặt hái thành công trọn vẹn và viên mãn!" }
+            "Chúc bạn một mùa Trung Thu ấm áp, đong đầy hạnh phúc và tràn ngập tiếng cười bên những người thân yêu!",
+            "Nhờ vầng trăng sáng tỏ gửi tới bạn niềm vui, sức khỏe dồi dào và muôn vàn may mắn trong cuộc sống!",
+            "Mọi ước nguyện của bạn dưới ánh trăng Rằm đêm nay sẽ đều trở thành hiện thực. Tròn đầy như trăng Rằm!"
         ];
 
-        // RESET BỘ ĐẾM VỀ 0 HOÀN TOÀN KHI VÀO INTRO
-        let clickCount = 0;
-        let lanternSpawnInterval = null;
+        let lanternClicks = 0; // Bộ đếm click
+        let spawnInterval = null;
+        const lanternContainer = document.getElementById('lantern-container');
+        const wishModal = document.getElementById('wish-modal');
+        const scrollText = document.getElementById('scrollText');
 
-        const lanternsContainer = document.getElementById('lanterns-container');
-        const wishModal = document.getElementById('wishModal');
-        const modalTitle = document.getElementById('modalTitle');
-        const modalContent = document.getElementById('modalContent');
-        const introHint = document.getElementById('introHint');
-        const moonViewport = document.getElementById('moon-viewport');
-        const earthScene = document.getElementById('earthScene');
-
-        // MẪU SVG LỒNG ĐÈN TRUYỀN THỐNG ĐỎ VÀNG CHI TIẾT LỤA ĐẸP
-        function createLanternSVG() {
-            return `
-            <svg width="75" height="110" viewBox="0 0 100 150">
-                <!-- Dây treo -->
-                <line x1="50" y1="0" x2="50" y2="20" stroke="#fbc531" stroke-width="2.5"/>
-                <!-- Quai cầm vàng -->
-                <path d="M 30,20 Q 50,10 70,20" fill="none" stroke="#fbc531" stroke-width="3"/>
-                <!-- Nắp trên -->
-                <rect x="28" y="20" width="44" height="8" rx="2" fill="#e1b12c"/>
-                
-                <!-- Bầu đèn lụa chính -->
-                <path d="M 28,28 Q 10,75 28,122 L 72,122 Q 90,75 72,28 Z" fill="url(#lanternGrad)" stroke="#c23616" stroke-width="2"/>
-                
-                <!-- Nếp gấp lụa bóng -->
-                <path d="M 38,28 Q 28,75 38,122" fill="none" stroke="#fbc531" stroke-width="1.5" opacity="0.7"/>
-                <path d="M 62,28 Q 72,75 62,122" fill="none" stroke="#fbc531" stroke-width="1.5" opacity="0.7"/>
-                <line x1="50" y1="28" x2="50" y2="122" stroke="#fff" stroke-width="1.5" opacity="0.5"/>
-
-                <!-- Ánh sáng lõi ngọn nến -->
-                <circle cx="50" cy="75" r="14" fill="#fff" opacity="0.85"/>
-                <circle cx="50" cy="75" r="22" fill="#fbc531" opacity="0.5"/>
-
-                <!-- Nắp dưới -->
-                <rect x="32" y="122" width="36" height="7" rx="2" fill="#e1b12c"/>
-
-                <!-- Tua rua đung đưa -->
-                <g class="tassel">
-                    <line x1="50" y1="129" x2="50" y2="150" stroke="#e84118" stroke-width="3"/>
-                    <circle cx="50" cy="132" r="3" fill="#fbc531"/>
-                    <line x1="45" y1="135" x2="43" y2="148" stroke="#fbc531" stroke-width="1.5"/>
-                    <line x1="55" y1="135" x2="57" y2="148" stroke="#fbc531" stroke-width="1.5"/>
-                </g>
-
-                <defs>
-                    <radialGradient id="lanternGrad" cx="50%" cy="50%" r="50%">
-                        <stop offset="0%" stop-color="#fbc531"/>
-                        <stop offset="60%" stop-color="#e84118"/>
-                        <stop offset="100%" stop-color="#c23616"/>
-                    </radialGradient>
-                </defs>
-            </svg>`;
+        // 1. KÍCH HOẠT TRẢI NGHIỆM & RESET TRẠNG THÁI
+        function startExperience() {
+            document.getElementById('intro-screen').classList.add('hidden');
+            
+            // RESET BỘ ĐẾM TRÁNH LỖI
+            lanternClicks = 0;
+            lanternContainer.innerHTML = '';
+            
+            // Bắt đầu đẻ lồng đèn
+            spawnInterval = setInterval(createLantern, 1800);
+            createLantern(); createLantern();
         }
 
-        // TẠO LỒNG ĐÈN BAY TỰ ĐỘNG VÀ NGẪU NHIÊN
-        function spawnLantern() {
-            if (clickCount >= 3) return;
+        // 2. TẠO LỒNG ĐÈN GIẤY TRUYỀN THỐNG BAY LÊN
+        function createLantern() {
+            if (lanternClicks >= 3) return;
 
             const lantern = document.createElement('div');
-            lantern.className = 'lantern-item';
-            lantern.innerHTML = createLanternSVG();
+            lantern.className = 'floating-lantern';
+            lantern.style.left = Math.random() * 80 + 10 + 'vw';
+            lantern.style.animationDuration = (Math.random() * 4 + 10) + 's';
 
-            // Tọa độ ngang ngẫu nhiên
-            const randomX = Math.random() * 82 + 8; // 8% -> 90% width
-            lantern.style.left = `${randomX}vw`;
-
-            // Kích thước ngẫu nhiên nhẹ
-            const scale = Math.random() * 0.3 + 0.85;
-            lantern.style.transform = `scale(${scale})`;
-
-            // Tốc độ bay ngẫu nhiên từ 11s -> 16s
-            const duration = Math.random() * 5 + 11;
-            lantern.style.animationDuration = `${duration}s`;
+            // Đèn lồng SVG
+            lantern.innerHTML = `
+                <svg width="65" height="95" viewBox="0 0 65 95">
+                    <line x1="32.5" y1="0" x2="32.5" y2="15" stroke="#fdcb6e" stroke-width="2"/>
+                    <rect x="20" y="12" width="25" height="6" fill="#d63031" rx="2"/>
+                    <path d="M 12,18 C 5,40 5,60 12,80 L 53,80 C 60,60 60,40 53,18 Z" fill="#e74c3c" stroke="#f1c40f" stroke-width="2"/>
+                    <path d="M 22,18 C 18,40 18,60 22,80 M 43,18 C 47,40 47,60 43,80" stroke="#f1c40f" stroke-width="1.5" fill="none"/>
+                    <circle cx="32.5" cy="50" r="10" fill="#ffeaa7" filter="drop-shadow(0 0 8px #fff)"/>
+                    <rect x="20" y="80" width="25" height="5" fill="#d63031" rx="1"/>
+                    <line x1="32.5" y1="85" x2="32.5" y2="95" stroke="#fdcb6e" stroke-width="3"/>
+                </svg>
+            `;
 
             // SỰ KIỆN CLICK VÀO LỒNG ĐÈN
             lantern.addEventListener('click', (e) => {
                 e.stopPropagation();
-                handleLanternClick(lantern);
+                if (lanternClicks >= 3) return;
+
+                lanternClicks++; // Tăng bộ đếm
+                
+                // Mở lời chúc tương ứng với lần click (1, 2, hoặc 3)
+                showWish(wishList[lanternClicks - 1]);
+                lantern.remove(); // Xóa lồng đèn đã click
+
+                // KIỂM TRA NẾU ĐÃ BẤM ĐỦ 3 LẦN
+                if (lanternClicks === 3) {
+                    clearInterval(spawnInterval); // Ngừng đẻ đèn mới
+                    
+                    // Cho tất cả đèn còn lại bay vút lên biến mất
+                    const remainingLanterns = document.querySelectorAll('.floating-lantern');
+                    remainingLanterns.forEach(l => l.classList.add('fly-away'));
+                }
             });
 
-            lanternsContainer.appendChild(lantern);
+            lanternContainer.appendChild(lantern);
 
-            // Tự xóa sau khi bay khỏi màn hình
+            // Tự xóa sau khi bay hết màn hình
             setTimeout(() => {
-                if (lantern.parentNode) {
-                    lantern.remove();
-                }
-            }, duration * 1000);
+                if (lantern.parentNode) lantern.remove();
+            }, 14000);
         }
 
-        // XỬ LÝ CLICK ĐÈN LỒNG
-        function handleLanternClick(lanternEl) {
-            if (clickCount >= 3) return;
-
-            // TĂNG BỘ ĐẾM MỖI LẦN CLICK ĐÈN
-            clickCount++;
-            introHint.innerText = `🏮 Hãy thả và chạm vào 3 Đèn Lồng ước nguyện để nhận Lời Chúc (${clickCount}/3)`;
-
-            // Hiệu ứng bùng sáng khi click
-            lanternEl.style.transition = 'all 0.4s ease';
-            lanternEl.style.transform = 'scale(1.8)';
-            lanternEl.style.opacity = '0';
-
-            setTimeout(() => {
-                lanternEl.remove();
-            }, 400);
-
-            // HIỂN THỊ LỜI CHÚC THEO ĐÚNG THỨ TỰ MẶC ĐỊNH 1 -> 2 -> 3
-            const wishData = wishList[clickCount - 1];
-            modalTitle.innerText = wishData.title;
-            modalContent.innerText = wishData.text;
+        // 3. HIỂN THỊ POPUP LỜI CHÚC
+        function showWish(text) {
+            scrollText.innerText = text;
             wishModal.classList.add('active');
         }
 
-        // ĐÓNG BẢNG LỜI CHÚC & KIỂM TRA ĐỦ 3 LẦN
         function closeWishModal() {
             wishModal.classList.remove('active');
 
-            // NẾU ĐÃ CLICK ĐỦ 3 LẦN -> DẪN VÀO OUTRO CAMERA ZOOM OUT!
-            if (clickCount >= 3) {
-                setTimeout(startOutroSequence, 800);
+            // NẾU ĐÃ ĐỦ 3 LỜI CHÚC -> CHUYỂN SANG OUTRO ZOOM OUT
+            if (lanternClicks === 3) {
+                setTimeout(triggerOutroZoomOut, 600);
             }
         }
 
-        // BẮT ĐẦU CHUỖI OUTRO PULL BACK / ZOOM OUT MẶT TRĂNG
-        function startOutroSequence() {
-            // Dừng tạo thêm đèn lồng
-            clearInterval(lanternSpawnInterval);
-            introHint.style.opacity = '0';
+        // 4. KỊCH BẢN OUTRO: TRĂNG SÁNG -> ZOOM OUT CAMERA -> TRÁI ĐẤT & PHÁO HOA
+        function triggerOutroZoomOut() {
+            const moonWorld = document.getElementById('moon-world');
+            const moonGround = document.getElementById('moon-ground');
+            const earthWorld = document.getElementById('earth-world');
 
-            // Xóa sạch đèn cũ trên màn hình
-            lanternsContainer.innerHTML = '';
-
-            // Bề mặt Trăng bừng sáng lung linh
-            moonViewport.classList.add('brighten');
+            // Bề mặt trăng bừng sáng lên
+            moonGround.classList.add('brighten');
 
             setTimeout(() => {
-                // PULL BACK / ZOOM OUT KHUNG HÌNH THU NHỎ THÀNH QUẢ CẦU
-                moonViewport.classList.add('zoomed-out');
+                // Thu nhỏ khung hình Mặt Trăng từ từ thành Quả Cầu
+                moonWorld.classList.add('zoom-out-to-moon');
 
-                // Hiện cảnh Trái Đất & Bóng 2 người bên nhau
+                // Hiển thị Trái Đất phía dưới
                 setTimeout(() => {
-                    earthScene.classList.add('active');
+                    earthWorld.classList.add('active');
                 }, 1200);
 
-                // Nổ pháo hoa đùng đùng
+                // Kích hoạt Pháo hoa nổ sau khi cảnh hoàn tất
                 setTimeout(() => {
-                    startFireworks();
-                }, 3200);
-            }, 1000);
+                    startFireworksShow();
+                }, 2800);
+            }, 800);
         }
 
-        // CHẠY LIÊN TỤC SPAWN LỒNG ĐÈN
-        function initLanternSpawner() {
-            // Spawn vài cái ban đầu
-            spawnLantern();
-            setTimeout(spawnLantern, 1200);
-            setTimeout(spawnLantern, 2500);
-
-            lanternSpawnInterval = setInterval(spawnLantern, 2800);
-        }
-
-        // 4. CANVAS ĐOM ĐÓM / SAO LẤP LÁNH BỀ MẶT TRĂNG
-        const pCanvas = document.getElementById('particle-canvas');
-        const pCtx = pCanvas.getContext('2d');
-        function resizeP() {
-            pCanvas.width = window.innerWidth;
-            pCanvas.height = window.innerHeight;
-        }
-        window.addEventListener('resize', resizeP);
-        resizeP();
-
-        const particles = Array.from({length: 50}, () => ({
-            x: Math.random() * pCanvas.width,
-            y: Math.random() * pCanvas.height,
-            r: Math.random() * 2 + 1,
-            sX: (Math.random() - 0.5) * 0.4,
-            sY: -Math.random() * 0.5 - 0.2,
-            a: Math.random()
-        }));
-
-        function animateParticles() {
-            pCtx.clearRect(0, 0, pCanvas.width, pCanvas.height);
-            particles.forEach(p => {
-                p.x += p.sX; p.y += p.sY;
-                if (p.y < 0) p.y = pCanvas.height;
-                pCtx.beginPath();
-                pCtx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
-                pCtx.fillStyle = '#ffeaa7';
-                pCtx.globalAlpha = p.a;
-                pCtx.fill();
-            });
-            requestAnimationFrame(animateParticles);
-        }
-        animateParticles();
-
-        // 5. CANVAS PHÁO HOA OUTRO CỦA TRÁI ĐẤT
+        // ==========================================
+        // 5. HỆ THỐNG PHÁO HOA VẬT LÝ NHƯ VIDEO MẪU
+        // ==========================================
         const fCanvas = document.getElementById('fireworks-canvas');
         const fCtx = fCanvas.getContext('2d');
-        function resizeF() {
+        let fireworks = [];
+        let particles = [];
+
+        function resizeCanvas() {
             fCanvas.width = window.innerWidth;
             fCanvas.height = window.innerHeight;
         }
-        window.addEventListener('resize', resizeF);
-        resizeF();
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
 
-        let fireworks = [];
-        let isFireworksActive = false;
+        // Lớp Tên Lửa Bay Lên
+        class FireworkRocket {
+            constructor(startX, targetX, targetY, color) {
+                this.x = startX;
+                this.y = fCanvas.height;
+                this.targetX = targetX;
+                this.targetY = targetY;
+                this.color = color;
+                this.speed = 9;
+                this.angle = Math.atan2(targetY - fCanvas.height, targetX - startX);
+                this.vx = Math.cos(this.angle) * this.speed;
+                this.vy = Math.sin(this.angle) * this.speed;
+                this.trail = [];
+            }
 
-        function createFirework() {
-            const x = Math.random() * (fCanvas.width - 200) + 100;
-            const y = Math.random() * (fCanvas.height * 0.4) + 80;
-            const count = 75;
-            const color = `hsl(${Math.random() * 360}, 100%, 65%)`;
+            update() {
+                this.trail.push({x: this.x, y: this.y});
+                if (this.trail.length > 6) this.trail.shift();
 
-            for (let i = 0; i < count; i++) {
-                const angle = (Math.PI * 2 / count) * i;
-                const speed = Math.random() * 4.5 + 2;
-                fireworks.push({
-                    x, y,
-                    vx: Math.cos(angle) * speed,
-                    vy: Math.sin(angle) * speed,
-                    alpha: 1,
-                    color
-                });
+                this.x += this.vx;
+                this.y += this.vy;
+
+                // Khi chạm độ cao mục tiêu -> Nổ tung!
+                if (this.y <= this.targetY) {
+                    createExplosion(this.x, this.y, this.color);
+                    return false;
+                }
+                return true;
+            }
+
+            draw() {
+                fCtx.beginPath();
+                fCtx.moveTo(this.x, this.y);
+                for (let p of this.trail) {
+                    fCtx.lineTo(p.x, p.y);
+                }
+                fCtx.strokeStyle = '#ffeaa7';
+                fCtx.lineWidth = 2.5;
+                fCtx.stroke();
             }
         }
 
-        function startFireworks() {
-            isFireworksActive = true;
-            setInterval(createFirework, 650);
+        // Lớp Hạt Pháo Hoa Kéo Vệt
+        class Particle {
+            constructor(x, y, color) {
+                this.x = x;
+                this.y = y;
+                this.color = color;
+                const angle = Math.random() * Math.PI * 2;
+                const speed = Math.random() * 6 + 1.5;
+                this.vx = Math.cos(angle) * speed;
+                this.vy = Math.sin(angle) * speed;
+                this.friction = 0.95; // Cản không khí
+                this.gravity = 0.08;   // Trọng lực rơi rủ
+                this.alpha = 1;
+                this.decay = Math.random() * 0.015 + 0.01;
+                this.prevX = x;
+                this.prevY = y;
+            }
+
+            update() {
+                this.prevX = this.x;
+                this.prevY = this.y;
+
+                this.vx *= this.friction;
+                this.vy *= this.friction;
+                this.vy += this.gravity;
+
+                this.x += this.vx;
+                this.y += this.vy;
+                this.alpha -= this.decay;
+
+                return this.alpha > 0;
+            }
+
+            draw() {
+                fCtx.beginPath();
+                fCtx.moveTo(this.prevX, this.prevY);
+                fCtx.lineTo(this.x, this.y); // Vẽ tia sáng kéo vệt
+                fCtx.strokeStyle = this.color;
+                fCtx.globalAlpha = Math.max(0, this.alpha);
+                fCtx.lineWidth = 2;
+                fCtx.stroke();
+            }
+        }
+
+        function createExplosion(x, y, color) {
+            const count = 80;
+            for (let i = 0; i < count; i++) {
+                particles.push(new Particle(x, y, color));
+            }
+        }
+
+        function startFireworksShow() {
+            const colors = ['#ff7675', '#fdcb6e', '#55efc4', '#74b9ff', '#a29bfe', '#fd79a8'];
+            
+            setInterval(() => {
+                const startX = Math.random() * (fCanvas.width - 200) + 100;
+                const targetX = startX + (Math.random() - 0.5) * 150;
+                const targetY = Math.random() * (fCanvas.height * 0.45) + 80;
+                const color = colors[Math.floor(Math.random() * colors.length)];
+
+                fireworks.push(new FireworkRocket(startX, targetX, targetY, color));
+            }, 800);
+
+            animateFireworks();
         }
 
         function animateFireworks() {
-            fCtx.clearRect(0, 0, fCanvas.width, fCanvas.height);
-            if (isFireworksActive) {
-                fireworks.forEach((p, index) => {
-                    p.x += p.vx;
-                    p.y += p.vy;
-                    p.vy += 0.04;
-                    p.alpha -= 0.015;
+            // Hiệu ứng mờ dần tạo vệt đuôi pháo hoa
+            fCtx.globalCompositeOperation = 'destination-out';
+            fCtx.fillStyle = 'rgba(0, 0, 0, 0.18)';
+            fCtx.fillRect(0, 0, fCanvas.width, fCanvas.height);
+            fCtx.globalCompositeOperation = 'lighter';
 
-                    if (p.alpha <= 0) {
-                        fireworks.splice(index, 1);
-                    } else {
-                        fCtx.beginPath();
-                        fCtx.arc(p.x, p.y, 2.5, 0, Math.PI * 2);
-                        fCtx.fillStyle = p.color;
-                        fCtx.globalAlpha = p.alpha;
-                        fCtx.shadowBlur = 10;
-                        fCtx.shadowColor = p.color;
-                        fCtx.fill();
-                    }
-                });
-            }
+            fireworks = fireworks.filter(fw => {
+                fw.draw();
+                return fw.update();
+            });
+
+            particles = particles.filter(p => {
+                p.draw();
+                return p.update();
+            });
+
             requestAnimationFrame(animateFireworks);
         }
-        animateFireworks();
-
-        // KHỞI CHẠY LẤY LẠI TRẠNG THÁI TRẮNG (RESET BỘ ĐẾM VỀ 0)
-        window.onload = () => {
-            clickCount = 0;
-            initLanternSpawner();
-        };
     </script>
 </body>
 </html>
