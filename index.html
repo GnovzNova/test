@@ -14,7 +14,7 @@
             user-select: none;
         }
 
-        /* BẦU TRỜI SAO LÀM NỀN */
+        /* BẦU TRỜI SAO LÀM NỀN TOÀN MÀN HÌNH */
         .starry-sky {
             position: absolute;
             top: 0; left: 0;
@@ -69,21 +69,20 @@
             box-shadow: 0 0 35px rgba(253, 203, 110, 0.9);
         }
 
-        /* VẦNG TRĂNG RẰM NGUYÊN KHỐI HIỆN RA KHI ZOOM OUT */
+        /* MẶT TRĂNG TRÒN OUTRO (HIỆN KHI RỜI XA MẶT TRĂNG) */
         #full-moon {
             position: absolute;
-            top: 12vh;
+            top: 15vh;
             left: 50%;
-            transform: translateX(-50%) scale(0.2);
-            width: 280px;
-            height: 280px;
+            transform: translateX(-50%) scale(0.3);
+            width: 300px;
+            height: 300px;
             background: radial-gradient(circle at 35% 35%, #ffffff 0%, #fff3a0 50%, #fbc531 100%);
             border-radius: 50%;
             box-shadow: 0 0 60px #fff, 0 0 120px #fbc531;
             z-index: 8;
             opacity: 0;
-            /* Thời gian trăng hiện lên mượt mà theo 5 giây */
-            transition: transform 5s cubic-bezier(0.25, 1, 0.3, 1), opacity 4s ease;
+            transition: transform 5s cubic-bezier(0.1, 0.8, 0.2, 1), opacity 4s ease;
         }
 
         #full-moon.active {
@@ -91,61 +90,76 @@
             transform: translateX(-50%) scale(1);
         }
 
-        /* THẾ GIỚI MẶT TRĂNG CẬN CẢNH */
+        /* THẾ GIỚI MẶT TRĂNG - BAO PHỦ TOÀN MÀN HÌNH */
         #moon-world {
             position: absolute;
             top: 0; left: 0;
             width: 100vw; height: 100vh;
             background: radial-gradient(circle at 50% 30%, #1a2536 0%, #090e17 70%, #02050e 100%);
-            transform-origin: 50% 25%;
-            /* ZOOM OUT CHẬM TRONG 5 GIÂY */
-            transition: transform 5s cubic-bezier(0.25, 1, 0.3, 1), opacity 4.5s ease;
             z-index: 10;
+            transition: transform 5s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 4s ease;
+            transform-origin: 50% 100%;
         }
 
-        /* TRẠNG THÁI ZOOM OUT THU NHỎ CỦA MẶT TRĂNG */
-        #moon-world.zoom-out {
-            transform: scale(0.12) translateY(-85vh);
+        /* MÔ PHỎNG PHI HÀNH GIA CẤT CÁNH: CẢNH VẬT THU NHỎ VÀ LỜI ĐI VÀO KHÔNG GIAN */
+        #moon-world.takeoff {
+            transform: scale(0.08) translateY(-300vh);
             opacity: 0;
             pointer-events: none;
         }
 
-        /* MẢNH ĐẤT MẶT TRĂNG & HIỆU ỨNG SÁNG TOÀN BỘ MẢNH ĐẤT */
+        /* MẢNH ĐẤT MẶT TRĂNG */
         #moon-ground {
             position: absolute;
             bottom: 0; left: 0;
-            width: 100vw; height: 160px;
+            width: 100vw; height: 180px;
             z-index: 10;
-            transition: filter 1.5s ease, transform 0.3s;
+            transition: all 1.2s ease;
         }
 
-        /* KHI BẤM ĐỦ 3 LẦN: MẢNH ĐẤT CÓ HIỆU ỨNG NHẤP NHÁY BỪNG SÁNG */
+        /* ĐẤT MẶT TRĂNG KHI SẴN SÀNG BẤM */
         #moon-ground.ready-to-click {
             cursor: pointer;
-            filter: drop-shadow(0 0 25px #ffeaa7) brightness(1.4);
-            animation: pulseGround 1.8s infinite alternate;
+            filter: drop-shadow(0 0 20px #fff3a0);
+            animation: pulseGround 1.5s infinite alternate;
         }
 
         @keyframes pulseGround {
-            0% { filter: drop-shadow(0 0 15px #ffeaa7) brightness(1.3); }
-            100% { filter: drop-shadow(0 0 35px #fff3a0) brightness(1.8); }
+            0% { filter: drop-shadow(0 0 15px #fdcb6e); }
+            100% { filter: drop-shadow(0 0 30px #fff3a0); }
         }
 
-        /* TOÀN BỘ MẢNH ĐẤT SÁNG RỰC KHI CLICK */
+        /* MÀU ĐẤT SÁNG LÊN GIỐNG HOÀN TOÀN MÀU TRĂNG RẰM OUTRO (#fff3a0 & #fbc531) */
+        #moon-ground path.ground-layer1 {
+            fill: #2c3e50;
+            transition: fill 1.2s ease;
+        }
+        #moon-ground path.ground-layer2 {
+            fill: #1e272e;
+            transition: fill 1.2s ease;
+        }
+
+        #moon-ground.brightened path.ground-layer1 {
+            fill: #fff3a0 !important;
+        }
+        #moon-ground.brightened path.ground-layer2 {
+            fill: #fbc531 !important;
+        }
+
         #moon-ground.brightened {
-            filter: drop-shadow(0 0 50px #ffffff) brightness(2.5) !important;
+            filter: drop-shadow(0 0 50px #fbc531) brightness(1.3) !important;
         }
 
         /* THÔNG BÁO HƯỚNG DẪN BẤM VÀO ĐẤT */
         #ground-hint {
             position: absolute;
-            bottom: 170px;
+            bottom: 190px;
             left: 50%;
             transform: translateX(-50%);
-            color: #ffeaa7;
+            color: #fff3a0;
             font-size: 1.2rem;
             font-weight: bold;
-            text-shadow: 0 0 12px #fdcb6e;
+            text-shadow: 0 0 12px #fbc531;
             z-index: 25;
             opacity: 0;
             pointer-events: none;
@@ -162,7 +176,7 @@
             opacity: 1;
         }
 
-        /* KHU VỰC CHỨA LỒNG ĐÈN */
+        /* LỒNG ĐÈN BAY */
         #lantern-container {
             position: absolute;
             top: 0; left: 0;
@@ -178,7 +192,6 @@
             pointer-events: auto;
             animation: floatUp 12s linear forwards, sway 3s ease-in-out infinite alternate;
             filter: drop-shadow(0 0 15px #ff7675);
-            transition: opacity 0.5s, transform 0.5s;
         }
 
         .floating-lantern.fly-away {
@@ -221,10 +234,9 @@
         .scroll-card {
             width: 320px;
             background: #fff8e7;
-            border: 4px solid #b2bec3;
-            border-image: linear-gradient(to bottom, #d63031, #e17055) 1;
+            border: 4px solid #d63031;
             padding: 25px 20px;
-            border-radius: 8px;
+            border-radius: 12px;
             box-shadow: 0 0 30px rgba(255, 118, 117, 0.8);
             text-align: center;
             transform: scale(0.7);
@@ -297,7 +309,7 @@
             pointer-events: none;
         }
 
-        /* VẬT THỂ TRÊN MẶT TRĂNG */
+        /* VẬT THỂ MẶT TRĂNG */
         .hang-nga-container {
             position: absolute;
             top: 18%; right: 15%;
@@ -338,21 +350,20 @@
         <button class="intro-btn" onclick="startExperience()">Bắt Đầu Ngắm Trăng</button>
     </div>
 
-    <!-- MẶT TRĂNG TRÒN OUTRO -->
+    <!-- MẶT TRĂNG TRÒN OUTRO KHI PHI HÀNH GIA LÊN CAO -->
     <div id="full-moon"></div>
 
-    <!-- KHU VỰC BỀ MẶT MẶT TRĂNG CẬN CẢNH -->
+    <!-- THẾ GIỚI MẶT TRĂNG CẬN CẢNH -->
     <div id="moon-world">
-        <!-- CHỮ HƯỚNG DẪN KHI BẤM ĐỦ 3 LỒNG ĐÈN -->
-        <div id="ground-hint">✨ Hãy chạm vào mặt đất để nhìn về Trái Đất ✨</div>
+        <div id="ground-hint">✨ Hãy chạm vào mặt đất để cất cánh nhìn về Trái Đất ✨</div>
 
         <!-- MẢNH ĐẤT MẶT TRĂNG -->
-        <svg id="moon-ground" viewBox="0 0 1440 160" preserveAspectRatio="none" onclick="onGroundClick()">
-            <path d="M0,60 Q360,110 720,50 Q1080,10 1440,60 L1440,160 L0,160 Z" fill="#2c3e50"/>
-            <path d="M0,80 Q400,40 800,90 Q1200,140 1440,70 L1440,160 L0,160 Z" fill="#1e272e" opacity="0.95"/>
+        <svg id="moon-ground" viewBox="0 0 1440 180" preserveAspectRatio="none" onclick="onGroundClick()">
+            <path class="ground-layer1" d="M0,60 Q360,110 720,50 Q1080,10 1440,60 L1440,180 L0,180 Z"/>
+            <path class="ground-layer2" d="M0,80 Q400,40 800,90 Q1200,140 1440,70 L1440,180 L0,180 Z" opacity="0.95"/>
         </svg>
 
-        <!-- HẰNG NGA NGUYÊN KHỐI -->
+        <!-- HẰNG NGA -->
         <div class="hang-nga-container">
             <svg width="160" height="200" viewBox="0 0 160 200">
                 <path d="M 30,120 Q 10,60 80,30 Q 150,20 130,110 Q 110,170 50,160" fill="none" stroke="#ff7675" stroke-width="4" stroke-linecap="round" opacity="0.85"/>
@@ -369,7 +380,7 @@
             </svg>
         </div>
 
-        <!-- CÂY ĐA VÀ CHÚ CUỘI -->
+        <!-- CÂY ĐA & CHÚ CUỘI -->
         <svg class="banyan-tree" viewBox="0 0 500 550">
             <path d="M 120,220 Q 60,70 210,30 Q 360,-20 480,40 Q 540,140 490,260 Q 430,350 320,300 Z" fill="#0b1a10"/>
             <path d="M 350,550 C 320,420 280,300 250,220 C 220,150 180,120 160,110 L 190,100 C 220,130 250,180 280,250 C 330,360 370,450 450,550 Z" fill="#2d1500"/>
@@ -389,11 +400,10 @@
             <ellipse cx="66" cy="20" rx="5" ry="17" fill="#ffffff" transform="rotate(8 66 20)"/>
         </svg>
 
-        <!-- CHỨA LỒNG ĐÈN BAY -->
         <div id="lantern-container"></div>
     </div>
 
-    <!-- CẢNH TRÁI ĐẤT & BÓNG 2 NGƯỜI (OUTRO) -->
+    <!-- CẢNH TRÁI ĐẤT PHÍA DƯỚI -->
     <div id="earth-world">
         <div class="earth-ground"></div>
         <svg class="couple-silhouette" width="180" height="130" viewBox="0 0 180 130">
@@ -425,7 +435,7 @@
 
         let lanternClicks = 0;
         let spawnInterval = null;
-        let canClickGround = false; // Cờ kiểm tra điều kiện click mảnh đất
+        let canClickGround = false;
         let hasZoomed = false;
 
         const lanternContainer = document.getElementById('lantern-container');
@@ -495,7 +505,6 @@
         function closeWishModal() {
             wishModal.classList.remove('active');
 
-            // BẤM ĐỦ 3 LẦN LỒNG ĐÈN -> KÍCH HOẠT CHẾ ĐỘ SẴN SÀNG CLICK MẢNH ĐẤT
             if (lanternClicks === 3 && !canClickGround) {
                 canClickGround = true;
                 moonGround.classList.add('ready-to-click');
@@ -503,50 +512,46 @@
             }
         }
 
-        // SỰ KIỆN KHI NGƯỜI DÙNG CLICK VÀO MẢNH ĐẤT
         function onGroundClick() {
             if (!canClickGround || hasZoomed) return;
             hasZoomed = true;
 
-            // 1. Mảnh đất sáng rực lên
+            // 1. Mảnh đất đổi sang màu vàng ấm của trăng Rằm (#fff3a0 / #fbc531)
             moonGround.classList.remove('ready-to-click');
             moonGround.classList.add('brightened');
             groundHint.classList.remove('show');
 
-            // 2. Chờ 0.8 giây cho mảnh đất sáng hoàn toàn rồi bắt đầu Zoom Out chậm trong 5 giây
+            // 2. Chờ 1 giây để hiệu ứng đổi màu đất hoàn tất rồi cất cánh
             setTimeout(() => {
-                triggerOutroZoomOut();
-            }, 800);
+                triggerTakeoff();
+            }, 1000);
         }
 
-        // KỊCH BẢN ZOOM OUT CAMERA CHẬM (5 GIÂY)
-        function triggerOutroZoomOut() {
+        function triggerTakeoff() {
             const moonWorld = document.getElementById('moon-world');
             const fullMoon = document.getElementById('full-moon');
             const earthWorld = document.getElementById('earth-world');
 
-            // Thu nhỏ chậm rãi thế giới Mặt Trăng trong 5s
-            moonWorld.classList.add('zoom-out');
+            // Cất cánh bay lên: Cảnh vật thu nhỏ và lao xuống dưới mượt mà
+            moonWorld.classList.add('takeoff');
 
-            // Hiện Mặt Trăng tròn trên bầu trời từ từ
+            // Vầng trăng tròn xuất hiện từ khoảng không
             setTimeout(() => {
                 fullMoon.classList.add('active');
-            }, 800);
+            }, 1200);
 
-            // Hiện bóng Trái Đất bên dưới
+            // Bóng Trái Đất hiện lên dưới góc nhìn
             setTimeout(() => {
                 earthWorld.classList.add('active');
-            }, 2000);
+            }, 2500);
 
-            // Pháo hoa bắt đầu nổ sau khi quá trình Zoom Out gần hoàn thành
+            // Pháo hoa bắt đầu nổ
             setTimeout(() => {
                 startFireworksShow();
-            }, 4000);
+            }, 4200);
         }
 
-        // ==========================================
-        // HỆ THỐNG PHÁO HOA
-        // ==========================================
+        /* PHÁO HOA */
         const fCanvas = document.getElementById('fireworks-canvas');
         const fCtx = fCanvas.getContext('2d');
         let fireworks = [];
