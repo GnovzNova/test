@@ -3,147 +3,216 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Đêm Rằm Trung Thu 🌕</title>
+    <title>Đêm Rằm Trung Thu - Lồng Đèn Ước Nguyện 🌕</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
-            background: #020514;
+            background: #02050e;
             overflow: hidden;
             width: 100vw; height: 100vh;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: 'Segoe UI', Arial, sans-serif;
             user-select: none;
         }
 
-        /* STAGE MẶT TRĂNG CŨ (SẼ FADE OUT KHI ZOOM) */
-        #moon-stage {
+        /* 1. KHUNG CẢNH MẶT TRĂNG (SẼ PULL BACK ZOOM OUT THÀNH QUẢ CẦU) */
+        #moon-viewport {
             position: absolute;
             width: 100vw; height: 100vh;
-            background: radial-gradient(circle at 50% 50%, #1a233a 0%, #050b1a 70%, #020514 100%);
-            transition: all 2.5s ease-in-out;
+            top: 0; left: 0;
+            background: radial-gradient(circle at 50% 50%, #1c2636 0%, #080d1a 70%, #02050e 100%);
+            clip-path: circle(150% at 50% 50%);
+            transition: transform 3.5s cubic-bezier(0.25, 1, 0.5, 1), 
+                        clip-path 3.5s cubic-bezier(0.25, 1, 0.5, 1),
+                        filter 2.5s ease;
             z-index: 5;
         }
 
-        /* 1. QUẢ MẶT TRĂNG TRÒN XỊN Ở BẦU TRỜI TRÁI ĐẤT */
-        .real-moon {
+        /* TRẠNG THÁI PULL BACK ZOOM OUT KHI CLICK ĐỦ 3 LẦN */
+        #moon-viewport.zoomed-out {
+            transform: scale(0.22) translateY(-110vh);
+            clip-path: circle(40% at 50% 50%);
+            filter: drop-shadow(0 0 50px #fff1a0) drop-shadow(0 0 100px #fdcb6e);
+        }
+
+        #moon-viewport.brighten {
+            filter: brightness(1.7) drop-shadow(0 0 40px rgba(255, 241, 160, 0.8));
+        }
+
+        /* CANVAS ĐOM ĐÓM / SAO LẤP LÁNH */
+        #particle-canvas {
             position: absolute;
-            top: 22%; left: 50%;
-            transform: translate(-50%, -50%) scale(0);
-            width: 220px; height: 220px;
-            border-radius: 50%;
-            background: #fff8d6;
-            box-shadow: 
-                0 0 40px #fff1a0,
-                0 0 100px rgba(253, 203, 110, 0.8),
-                0 0 180px rgba(253, 203, 110, 0.4);
-            z-index: 3;
-            transition: transform 2.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        }
-
-        /* 2. LỒNG ĐÈN & LỜI CHÚC */
-        .lantern-container {
-            position: absolute;
-            bottom: -150px; left: 50%;
-            transform: translateX(-50%);
-            z-index: 10;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            opacity: 0;
-            transition: opacity 1s ease;
-        }
-
-        .lantern-container.show {
-            opacity: 1;
-            animation: floatUp 12s linear forwards;
-        }
-
-        @keyframes floatUp {
-            0% { transform: translate(-50%, 0); }
-            80% { opacity: 1; }
-            100% { transform: translate(-50%, -90vh); opacity: 0; }
-        }
-
-        .lantern-svg {
-            width: 80px; height: 100px;
-            filter: drop-shadow(0 0 15px #ff7675);
-        }
-
-        .wish-box {
-            margin-top: 15px;
-            background: rgba(255, 248, 214, 0.95);
-            padding: 10px 22px;
-            border-radius: 20px;
-            color: #d63031;
-            font-weight: bold;
-            font-size: 1.2rem;
-            box-shadow: 0 0 20px rgba(255, 234, 167, 0.8);
-            white-space: nowrap;
-        }
-
-        /* THÔNG BÁO CLICK */
-        .click-hint {
-            position: absolute;
-            top: 25%; left: 50%;
-            transform: translate(-50%, -50%);
-            color: #ffeaa7;
-            font-size: 1.3rem;
-            font-weight: bold;
-            text-shadow: 0 0 12px #fdcb6e;
-            opacity: 0;
-            transition: opacity 1s ease;
-            z-index: 20;
-            cursor: pointer;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            z-index: 2;
             pointer-events: none;
-            animation: pulse 1.5s infinite alternate;
+        }
+
+        /* HƯỚNG DẪN TRÊN TRỜI */
+        .intro-hint {
+            position: absolute;
+            top: 8%; left: 50%;
+            transform: translateX(-50%);
+            color: #ffeaa7;
+            font-size: 1.2rem;
+            font-weight: bold;
+            text-align: center;
+            background: rgba(8, 13, 26, 0.6);
+            padding: 8px 20px;
+            border-radius: 25px;
+            border: 1px solid rgba(254, 202, 87, 0.4);
+            box-shadow: 0 0 15px rgba(254, 202, 87, 0.3);
+            z-index: 10;
+            transition: opacity 1s ease;
+            animation: pulse 2s infinite alternate;
         }
 
         @keyframes pulse {
-            0% { transform: translate(-50%, -50%) scale(0.95); }
-            100% { transform: translate(-50%, -50%) scale(1.05); }
+            0% { transform: translateX(-50%) scale(0.98); }
+            100% { transform: translateX(-50%) scale(1.03); }
         }
 
-        /* 3. CẢNH TRÁI ĐẤT & BÓNG 2 NGƯỜI */
+        /* 2. THIẾT KẾ ĐÈN LỒNG CHI TIẾT (LỤA ĐỎ VÀNG TRUYỀN THỐNG + TUA RUA) */
+        .lantern-item {
+            position: absolute;
+            bottom: -150px;
+            cursor: pointer;
+            z-index: 12;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            transition: transform 0.2s ease, filter 0.2s ease;
+            filter: drop-shadow(0 0 12px rgba(255, 118, 117, 0.8));
+            animation: flyUp 14s linear forwards;
+        }
+
+        .lantern-item:hover {
+            transform: scale(1.15) !important;
+            filter: drop-shadow(0 0 25px #fdcb6e) drop-shadow(0 0 35px #ff7675) !important;
+        }
+
+        @keyframes flyUp {
+            0% { transform: translateY(0) rotate(-2deg); opacity: 0; }
+            10% { opacity: 1; }
+            50% { transform: translateY(-50vh) rotate(3deg); }
+            100% { transform: translateY(-115vh) rotate(-2deg); opacity: 0.9; }
+        }
+
+        .tassel {
+            animation: sway 2s ease-in-out infinite alternate;
+            transform-origin: top center;
+        }
+
+        @keyframes sway {
+            0% { transform: rotate(-8deg); }
+            100% { transform: rotate(8deg); }
+        }
+
+        /* 3. BẢNG LỜI CHÚC (CUỘN THƯ CỔ PHONG CHÍNH GIỮA) */
+        .wish-modal {
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%) scale(0);
+            background: linear-gradient(135deg, #fff3e0 0%, #ffe0b2 100%);
+            border: 3px solid #d32f2f;
+            outline: 2px solid #ffb300;
+            border-radius: 16px;
+            padding: 25px 35px;
+            text-align: center;
+            box-shadow: 0 0 40px rgba(255, 179, 0, 0.8), inset 0 0 15px rgba(211, 47, 47, 0.2);
+            z-index: 30;
+            width: 85%;
+            max-width: 480px;
+            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.3s ease;
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .wish-modal.active {
+            transform: translate(-50%, -50%) scale(1);
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .wish-modal h3 {
+            color: #b71c1c;
+            font-size: 1.4rem;
+            margin-bottom: 12px;
+            border-bottom: 2px stroke #ffe0b2;
+            padding-bottom: 6px;
+            font-family: 'Georgia', serif;
+        }
+
+        .wish-modal p {
+            color: #3e2723;
+            font-size: 1.15rem;
+            line-height: 1.6;
+            font-weight: 600;
+        }
+
+        .wish-modal button {
+            margin-top: 18px;
+            background: linear-gradient(to right, #d32f2f, #b71c1c);
+            color: #fff;
+            border: none;
+            padding: 8px 24px;
+            border-radius: 20px;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            transition: transform 0.2s;
+        }
+
+        .wish-modal button:hover {
+            transform: scale(1.08);
+            background: #e53935;
+        }
+
+        /* 4. CẢNH TRÁI ĐẤT & BÓNG 2 NGƯỜI KHI ZOOM OUT (OUTRO) */
         .earth-scene {
             position: absolute;
             bottom: -100%; left: 0;
             width: 100vw; height: 100vh;
-            z-index: 4;
+            z-index: 6;
             transition: bottom 2.5s ease-in-out;
             pointer-events: none;
+        }
+
+        .earth-scene.active {
+            bottom: 0;
         }
 
         .ground-earth {
             position: absolute;
             bottom: 0; left: 0;
-            width: 100vw; height: 160px;
-            background: linear-gradient(to top, #02050e, #0a1128);
+            width: 100vw; height: 150px;
+            background: #02050e;
         }
 
         .couple-silhouette {
             position: absolute;
-            bottom: 35px; left: 50%;
+            bottom: 30px; left: 50%;
             transform: translateX(-50%);
-            z-index: 6;
+            z-index: 7;
         }
 
-        /* CANVAS ĐOM ĐÓM & PHÁO HOA */
-        #main-canvas {
+        /* CANVAS PHÁO HOA */
+        #fireworks-canvas {
             position: absolute;
             top: 0; left: 0;
             width: 100vw; height: 100vh;
-            z-index: 2;
+            z-index: 8;
             pointer-events: none;
         }
 
-        /* MẶT TRĂNG CŨ: CÂY ĐA, CUỘI, HẰNG, THỎ */
+        /* ELEMENT BỀ MẶT MẶT TRĂNG (HẰNG NGA, CÂY ĐA, CUỘI, THỎ) */
         .hang-nga {
             position: absolute;
-            top: 15%; right: 20%;
-            filter: drop-shadow(0 0 12px rgba(255, 234, 167, 0.6));
-            animation: float 4s ease-in-out infinite alternate;
+            top: 15%; right: 18%;
+            z-index: 4;
+            animation: floatHangNga 4s ease-in-out infinite alternate;
         }
 
-        @keyframes float {
+        @keyframes floatHangNga {
             0% { transform: translateY(0); }
             100% { transform: translateY(-15px); }
         }
@@ -151,38 +220,43 @@
         .banyan-and-cuoi {
             position: absolute;
             bottom: 0; right: 0;
-            width: 600px; height: 650px;
+            width: 550px; height: 600px;
+            z-index: 4;
         }
 
         .rabbit {
             position: absolute;
-            bottom: 40px; left: 15%;
+            bottom: 35px; left: 15%;
+            z-index: 4;
         }
 
         .ground-moon {
             position: absolute;
             bottom: 0; left: 0;
-            width: 100vw; height: 140px;
+            width: 100vw; height: 130px;
+            z-index: 3;
         }
     </style>
 </head>
 <body>
 
-    <!-- MẶT TRĂNG THẬT TRÒN XỊN TRÊN BẦU TRỜI TRÁI ĐẤT -->
-    <div class="real-moon" id="realMoon"></div>
+    <!-- BỀ MẶT MẶT TRĂNG (KHI OUTRO SẼ PULL BACK THU NHỎ THÀNH QUẢ CẦU) -->
+    <div id="moon-viewport">
+        <canvas id="particle-canvas"></canvas>
 
-    <canvas id="main-canvas"></canvas>
+        <div class="intro-hint" id="introHint">
+            🏮 Hãy thả và chạm vào 3 Đèn Lồng ước nguyện để nhận Lời Chúc (0/3)
+        </div>
 
-    <!-- KHUNG CẢNH TRÊN MẶT TRĂNG CỦA CUỘI & HẰNG -->
-    <div id="moon-stage">
-        <svg class="ground-moon" viewBox="0 0 1440 140" preserveAspectRatio="none">
-            <path d="M0,60 Q360,110 720,50 Q1080,0 1440,60 L1440,140 L0,140 Z" fill="#1e272e"/>
-            <path d="M0,80 Q400,40 800,90 Q1200,140 1440,70 L1440,140 L0,140 Z" fill="#0f171e" opacity="0.8"/>
+        <!-- ĐẤT MẶT TRĂNG -->
+        <svg class="ground-moon" viewBox="0 0 1440 130" preserveAspectRatio="none">
+            <path d="M0,50 Q360,100 720,40 Q1080,0 1440,50 L1440,130 L0,130 Z" fill="#18202a"/>
+            <path d="M0,70 Q400,30 800,80 Q1200,130 1440,60 L1440,130 L0,130 Z" fill="#0d131d" opacity="0.8"/>
         </svg>
 
-        <!-- CHỊ HẰNG -->
+        <!-- CHỊ HẰNG NGA -->
         <div class="hang-nga">
-            <svg width="180" height="200" viewBox="0 0 180 200">
+            <svg width="140" height="160" viewBox="0 0 180 200">
                 <path d="M 20,120 Q 10,20 90,15 Q 170,10 160,100 Q 150,170 80,185 Q 20,190 30,130" fill="none" stroke="#ff7675" stroke-width="3.5" opacity="0.8"/>
                 <path d="M 80,85 L 40,180 Q 90,195 135,175 L 100,85 Z" fill="#fd79a8"/>
                 <path d="M 82,85 L 55,178 Q 88,188 120,175 L 98,85 Z" fill="#ffffff" opacity="0.85"/>
@@ -191,7 +265,7 @@
             </svg>
         </div>
 
-        <!-- CÂY ĐA & CUỘI -->
+        <!-- CÂY ĐA VÀ CHÚ CUỘI -->
         <svg class="banyan-and-cuoi" viewBox="0 0 600 650">
             <defs>
                 <linearGradient id="trunkGrad" x1="0" y1="0" x2="1" y2="0">
@@ -219,7 +293,7 @@
 
         <!-- THỎ NGỌC -->
         <div class="rabbit">
-            <svg width="90" height="100" viewBox="0 0 100 110">
+            <svg width="80" height="90" viewBox="0 0 100 110">
                 <circle cx="20" cy="80" r="7" fill="#ffffff"/>
                 <ellipse cx="45" cy="78" rx="25" ry="18" fill="#ffffff"/>
                 <circle cx="62" cy="50" r="18" fill="#ffffff"/>
@@ -228,106 +302,254 @@
             </svg>
         </div>
 
-        <!-- LỒNG ĐÈN CHẠY LỜI CHÚC -->
-        <div class="lantern-container" id="lantern">
-            <svg class="lantern-svg" viewBox="0 0 100 120">
-                <path d="M 30,20 L 70,20 L 85,60 L 70,100 L 30,100 L 15,60 Z" fill="#e74c3c"/>
-                <path d="M 35,20 L 65,20 L 75,60 L 65,100 L 35,100 L 25,60 Z" fill="#f1c40f"/>
-                <circle cx="50" cy="60" r="12" fill="#ffffff" opacity="0.8"/>
-            </svg>
-            <div class="wish-box" id="wishText">Lời chúc a</div>
-        </div>
-
-        <!-- HƯỚNG DẪN CLICK -->
-        <div class="click-hint" id="clickHint">✨ Click vào màn hình để ngắm Trăng từ Trái Đất ✨</div>
+        <!-- CONTAINER CHỨA CÁC ĐÈN LỒNG BAY NĂNG ĐỘNG -->
+        <div id="lanterns-container"></div>
     </div>
 
-    <!-- KHUNG CẢNH TRÁI ĐẤT -->
+    <!-- 3. CUỘN THƯ BẢNG LỜI CHÚC MODAL -->
+    <div class="wish-modal" id="wishModal">
+        <h3 id="modalTitle">🌕 Lời Chúc Ước Nguyện 🌕</h3>
+        <p id="modalContent">Nội dung lời chúc...</p>
+        <button onclick="closeWishModal()">Mở Lồng Đèn Tiếp 🏮</button>
+    </div>
+
+    <!-- 4. KHUNG CẢNH TRÁI ĐẤT & BÓNG 2 NGƯỜI (OUTRO) -->
     <div class="earth-scene" id="earthScene">
         <div class="ground-earth"></div>
         <svg class="couple-silhouette" width="160" height="120" viewBox="0 0 160 120">
-            <!-- Nam -->
-            <circle cx="65" cy="35" r="14" fill="#02050e"/>
-            <path d="M 40,120 C 40,70 55,55 75,55 C 80,55 85,70 85,120 Z" fill="#02050e"/>
-            <!-- Nữ dựa vai -->
-            <circle cx="88" cy="42" r="12" fill="#02050e"/>
-            <path d="M 75,120 C 75,75 85,62 105,65 C 115,75 110,90 115,120 Z" fill="#02050e"/>
+            <circle cx="65" cy="35" r="14" fill="#000000"/>
+            <path d="M 40,120 C 40,70 55,55 75,55 C 80,55 85,70 85,120 Z" fill="#000000"/>
+            <circle cx="88" cy="42" r="12" fill="#000000"/>
+            <path d="M 75,120 C 75,75 85,62 105,65 C 115,75 110,90 115,120 Z" fill="#000000"/>
         </svg>
     </div>
 
+    <!-- CANVAS BẮN PHÁO HOA TRÊN BẦU TRỜI TRÁI ĐẤT -->
+    <canvas id="fireworks-canvas"></canvas>
+
     <script>
-        const wishes = ["a", "b", "c"];
-        let wishIndex = 0;
-        const wishText = document.getElementById('wishText');
-        const lantern = document.getElementById('lantern');
-        const clickHint = document.getElementById('clickHint');
-        const moonStage = document.getElementById('moon-stage');
-        const realMoon = document.getElementById('realMoon');
+        // DANH SÁCH 3 LỜI CHÚC THEO THỨ TỰ CỐ ĐỊNH 1 -> 2 -> 3
+        const wishList = [
+            { title: "🌕 Lời Chúc Thứ Nhất 🌕", text: "Chúc bạn một mùa Trung Thu ấm áp, đong đầy yêu thương và niềm vui bên gia đình!" },
+            { title: "⭐ Lời Chúc Thứ Hai ⭐", text: "Mong mọi điều may mắn, an lành, hạnh phúc và bình yên nhất sẽ luôn đến với bạn!" },
+            { title: "🥮 Lời Chúc Thứ Ba 🥮", text: "Trăng rằm chiếu sáng những ước mơ, chúc bạn gặt hái thành công trọn vẹn và viên mãn!" }
+        ];
+
+        // RESET BỘ ĐẾM VỀ 0 HOÀN TOÀN KHI VÀO INTRO
+        let clickCount = 0;
+        let lanternSpawnInterval = null;
+
+        const lanternsContainer = document.getElementById('lanterns-container');
+        const wishModal = document.getElementById('wishModal');
+        const modalTitle = document.getElementById('modalTitle');
+        const modalContent = document.getElementById('modalContent');
+        const introHint = document.getElementById('introHint');
+        const moonViewport = document.getElementById('moon-viewport');
         const earthScene = document.getElementById('earthScene');
 
-        // CHẠY 3 CÂU CHÚC
-        function startWishes() {
-            lantern.classList.add('show');
-            const interval = setInterval(() => {
-                wishIndex++;
-                if (wishIndex < wishes.length) {
-                    wishText.innerText = wishes[wishIndex];
-                } else {
-                    clearInterval(interval);
-                    setTimeout(() => {
-                        lantern.style.display = 'none';
-                        clickHint.style.opacity = '1';
-                        clickHint.style.pointerEvents = 'auto';
-                    }, 2000);
-                }
-            }, 3500);
+        // MẪU SVG LỒNG ĐÈN TRUYỀN THỐNG ĐỎ VÀNG CHI TIẾT LỤA ĐẸP
+        function createLanternSVG() {
+            return `
+            <svg width="75" height="110" viewBox="0 0 100 150">
+                <!-- Dây treo -->
+                <line x1="50" y1="0" x2="50" y2="20" stroke="#fbc531" stroke-width="2.5"/>
+                <!-- Quai cầm vàng -->
+                <path d="M 30,20 Q 50,10 70,20" fill="none" stroke="#fbc531" stroke-width="3"/>
+                <!-- Nắp trên -->
+                <rect x="28" y="20" width="44" height="8" rx="2" fill="#e1b12c"/>
+                
+                <!-- Bầu đèn lụa chính -->
+                <path d="M 28,28 Q 10,75 28,122 L 72,122 Q 90,75 72,28 Z" fill="url(#lanternGrad)" stroke="#c23616" stroke-width="2"/>
+                
+                <!-- Nếp gấp lụa bóng -->
+                <path d="M 38,28 Q 28,75 38,122" fill="none" stroke="#fbc531" stroke-width="1.5" opacity="0.7"/>
+                <path d="M 62,28 Q 72,75 62,122" fill="none" stroke="#fbc531" stroke-width="1.5" opacity="0.7"/>
+                <line x1="50" y1="28" x2="50" y2="122" stroke="#fff" stroke-width="1.5" opacity="0.5"/>
+
+                <!-- Ánh sáng lõi ngọn nến -->
+                <circle cx="50" cy="75" r="14" fill="#fff" opacity="0.85"/>
+                <circle cx="50" cy="75" r="22" fill="#fbc531" opacity="0.5"/>
+
+                <!-- Nắp dưới -->
+                <rect x="32" y="122" width="36" height="7" rx="2" fill="#e1b12c"/>
+
+                <!-- Tua rua đung đưa -->
+                <g class="tassel">
+                    <line x1="50" y1="129" x2="50" y2="150" stroke="#e84118" stroke-width="3"/>
+                    <circle cx="50" cy="132" r="3" fill="#fbc531"/>
+                    <line x1="45" y1="135" x2="43" y2="148" stroke="#fbc531" stroke-width="1.5"/>
+                    <line x1="55" y1="135" x2="57" y2="148" stroke="#fbc531" stroke-width="1.5"/>
+                </g>
+
+                <defs>
+                    <radialGradient id="lanternGrad" cx="50%" cy="50%" r="50%">
+                        <stop offset="0%" stop-color="#fbc531"/>
+                        <stop offset="60%" stop-color="#e84118"/>
+                        <stop offset="100%" stop-color="#c23616"/>
+                    </radialGradient>
+                </defs>
+            </svg>`;
         }
-        setTimeout(startWishes, 1000);
 
-        // CLICK SỰ KIỆN CHUYỂN CẢNH
-        let sequenceStarted = false;
-        document.body.addEventListener('click', () => {
-            if (clickHint.style.opacity === '1' && !sequenceStarted) {
-                sequenceStarted = true;
-                clickHint.style.opacity = '0';
+        // TẠO LỒNG ĐÈN BAY TỰ ĐỘNG VÀ NGẪU NHIÊN
+        function spawnLantern() {
+            if (clickCount >= 3) return;
 
-                // 1. Biến mất cảnh mặt trăng cũ + Thu nhỏ lại
-                moonStage.style.transform = 'scale(0.1)';
-                moonStage.style.opacity = '0';
+            const lantern = document.createElement('div');
+            lantern.className = 'lantern-item';
+            lantern.innerHTML = createLanternSVG();
 
-                // 2. Hiện Mặt Trăng tròn xịn trên trời
-                realMoon.style.transform = 'translate(-50%, -50%) scale(1)';
+            // Tọa độ ngang ngẫu nhiên
+            const randomX = Math.random() * 82 + 8; // 8% -> 90% width
+            lantern.style.left = `${randomX}vw`;
 
-                // 3. Đẩy Trái Đất & 2 bóng người lên
+            // Kích thước ngẫu nhiên nhẹ
+            const scale = Math.random() * 0.3 + 0.85;
+            lantern.style.transform = `scale(${scale})`;
+
+            // Tốc độ bay ngẫu nhiên từ 11s -> 16s
+            const duration = Math.random() * 5 + 11;
+            lantern.style.animationDuration = `${duration}s`;
+
+            // SỰ KIỆN CLICK VÀO LỒNG ĐÈN
+            lantern.addEventListener('click', (e) => {
+                e.stopPropagation();
+                handleLanternClick(lantern);
+            });
+
+            lanternsContainer.appendChild(lantern);
+
+            // Tự xóa sau khi bay khỏi màn hình
+            setTimeout(() => {
+                if (lantern.parentNode) {
+                    lantern.remove();
+                }
+            }, duration * 1000);
+        }
+
+        // XỬ LÝ CLICK ĐÈN LỒNG
+        function handleLanternClick(lanternEl) {
+            if (clickCount >= 3) return;
+
+            // TĂNG BỘ ĐẾM MỖI LẦN CLICK ĐÈN
+            clickCount++;
+            introHint.innerText = `🏮 Hãy thả và chạm vào 3 Đèn Lồng ước nguyện để nhận Lời Chúc (${clickCount}/3)`;
+
+            // Hiệu ứng bùng sáng khi click
+            lanternEl.style.transition = 'all 0.4s ease';
+            lanternEl.style.transform = 'scale(1.8)';
+            lanternEl.style.opacity = '0';
+
+            setTimeout(() => {
+                lanternEl.remove();
+            }, 400);
+
+            // HIỂN THỊ LỜI CHÚC THEO ĐÚNG THỨ TỰ MẶC ĐỊNH 1 -> 2 -> 3
+            const wishData = wishList[clickCount - 1];
+            modalTitle.innerText = wishData.title;
+            modalContent.innerText = wishData.text;
+            wishModal.classList.add('active');
+        }
+
+        // ĐÓNG BẢNG LỜI CHÚC & KIỂM TRA ĐỦ 3 LẦN
+        function closeWishModal() {
+            wishModal.classList.remove('active');
+
+            // NẾU ĐÃ CLICK ĐỦ 3 LẦN -> DẪN VÀO OUTRO CAMERA ZOOM OUT!
+            if (clickCount >= 3) {
+                setTimeout(startOutroSequence, 800);
+            }
+        }
+
+        // BẮT ĐẦU CHUỖI OUTRO PULL BACK / ZOOM OUT MẶT TRĂNG
+        function startOutroSequence() {
+            // Dừng tạo thêm đèn lồng
+            clearInterval(lanternSpawnInterval);
+            introHint.style.opacity = '0';
+
+            // Xóa sạch đèn cũ trên màn hình
+            lanternsContainer.innerHTML = '';
+
+            // Bề mặt Trăng bừng sáng lung linh
+            moonViewport.classList.add('brighten');
+
+            setTimeout(() => {
+                // PULL BACK / ZOOM OUT KHUNG HÌNH THU NHỎ THÀNH QUẢ CẦU
+                moonViewport.classList.add('zoomed-out');
+
+                // Hiện cảnh Trái Đất & Bóng 2 người bên nhau
                 setTimeout(() => {
-                    earthScene.style.bottom = '0';
-                }, 1000);
+                    earthScene.classList.add('active');
+                }, 1200);
 
-                // 4. Đợi 2s rồi BẮN PHÁO HOA
+                // Nổ pháo hoa đùng đùng
                 setTimeout(() => {
                     startFireworks();
-                }, 3000);
-            }
-        });
-
-        // CANVAS PHÁO HOA
-        const canvas = document.getElementById('main-canvas');
-        const ctx = canvas.getContext('2d');
-        function resize() {
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight;
+                }, 3200);
+            }, 1000);
         }
-        window.addEventListener('resize', resize);
-        resize();
+
+        // CHẠY LIÊN TỤC SPAWN LỒNG ĐÈN
+        function initLanternSpawner() {
+            // Spawn vài cái ban đầu
+            spawnLantern();
+            setTimeout(spawnLantern, 1200);
+            setTimeout(spawnLantern, 2500);
+
+            lanternSpawnInterval = setInterval(spawnLantern, 2800);
+        }
+
+        // 4. CANVAS ĐOM ĐÓM / SAO LẤP LÁNH BỀ MẶT TRĂNG
+        const pCanvas = document.getElementById('particle-canvas');
+        const pCtx = pCanvas.getContext('2d');
+        function resizeP() {
+            pCanvas.width = window.innerWidth;
+            pCanvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resizeP);
+        resizeP();
+
+        const particles = Array.from({length: 50}, () => ({
+            x: Math.random() * pCanvas.width,
+            y: Math.random() * pCanvas.height,
+            r: Math.random() * 2 + 1,
+            sX: (Math.random() - 0.5) * 0.4,
+            sY: -Math.random() * 0.5 - 0.2,
+            a: Math.random()
+        }));
+
+        function animateParticles() {
+            pCtx.clearRect(0, 0, pCanvas.width, pCanvas.height);
+            particles.forEach(p => {
+                p.x += p.sX; p.y += p.sY;
+                if (p.y < 0) p.y = pCanvas.height;
+                pCtx.beginPath();
+                pCtx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+                pCtx.fillStyle = '#ffeaa7';
+                pCtx.globalAlpha = p.a;
+                pCtx.fill();
+            });
+            requestAnimationFrame(animateParticles);
+        }
+        animateParticles();
+
+        // 5. CANVAS PHÁO HOA OUTRO CỦA TRÁI ĐẤT
+        const fCanvas = document.getElementById('fireworks-canvas');
+        const fCtx = fCanvas.getContext('2d');
+        function resizeF() {
+            fCanvas.width = window.innerWidth;
+            fCanvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resizeF);
+        resizeF();
 
         let fireworks = [];
         let isFireworksActive = false;
 
         function createFirework() {
-            // Nổ ở nửa trên bầu trời (không dính vào mặt trăng)
-            const x = Math.random() * (canvas.width - 200) + 100;
-            const y = Math.random() * (canvas.height * 0.4) + 50;
-            const count = 70;
+            const x = Math.random() * (fCanvas.width - 200) + 100;
+            const y = Math.random() * (fCanvas.height * 0.4) + 80;
+            const count = 75;
             const color = `hsl(${Math.random() * 360}, 100%, 65%)`;
 
             for (let i = 0; i < count; i++) {
@@ -345,12 +567,11 @@
 
         function startFireworks() {
             isFireworksActive = true;
-            setInterval(createFirework, 700);
+            setInterval(createFirework, 650);
         }
 
-        function animate() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-
+        function animateFireworks() {
+            fCtx.clearRect(0, 0, fCanvas.width, fCanvas.height);
             if (isFireworksActive) {
                 fireworks.forEach((p, index) => {
                     p.x += p.vx;
@@ -361,20 +582,25 @@
                     if (p.alpha <= 0) {
                         fireworks.splice(index, 1);
                     } else {
-                        ctx.beginPath();
-                        ctx.arc(p.x, p.y, 2.5, 0, Math.PI * 2);
-                        ctx.fillStyle = p.color;
-                        ctx.globalAlpha = p.alpha;
-                        ctx.shadowBlur = 10;
-                        ctx.shadowColor = p.color;
-                        ctx.fill();
+                        fCtx.beginPath();
+                        fCtx.arc(p.x, p.y, 2.5, 0, Math.PI * 2);
+                        fCtx.fillStyle = p.color;
+                        fCtx.globalAlpha = p.alpha;
+                        fCtx.shadowBlur = 10;
+                        fCtx.shadowColor = p.color;
+                        fCtx.fill();
                     }
                 });
             }
-
-            requestAnimationFrame(animate);
+            requestAnimationFrame(animateFireworks);
         }
-        animate();
+        animateFireworks();
+
+        // KHỞI CHẠY LẤY LẠI TRẠNG THÁI TRẮNG (RESET BỘ ĐẾM VỀ 0)
+        window.onload = () => {
+            clickCount = 0;
+            initLanternSpawner();
+        };
     </script>
 </body>
 </html>
