@@ -3,259 +3,190 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Đêm Trung Thu 2D Pure SVG 🌕</title>
+    <title>Đêm Rằm Trung Thu 🌕</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
-            background: #030611;
+            background: #02050e;
             overflow: hidden;
             width: 100vw; height: 100vh;
-            font-family: sans-serif;
         }
 
         .scene {
             position: relative;
             width: 100vw; height: 100vh;
-            background: radial-gradient(circle at 50% 30%, #1a233d 0%, #050814 75%);
+            background: radial-gradient(circle at 50% 30%, #172038 0%, #030611 80%);
             overflow: hidden;
         }
 
-        /* TRĂNG RẰM */
-        .moon-container {
+        /* 1. MẶT TRĂNG KHỔNG LỒ */
+        .moon-glow {
             position: absolute;
-            top: 6%; left: 50%;
-            transform: translateX(-50%);
-            width: 320px; height: 320px;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -60%);
+            width: 480px; height: 480px;
+            background: radial-gradient(circle, #ffffff 0%, #fff3a1 40%, #fbc531 70%, rgba(251,197,49,0) 100%);
+            border-radius: 50%;
+            filter: drop-shadow(0 0 60px rgba(251, 197, 49, 0.6));
             z-index: 1;
         }
 
-        /* MÂY TRÔI */
-        .cloud {
-            position: absolute;
-            z-index: 2;
-            animation: floatCloud 14s ease-in-out infinite alternate;
-        }
-        .cloud-1 { top: 10%; left: 10%; width: 260px; opacity: 0.5; }
-        .cloud-2 { top: 22%; right: 8%; width: 300px; opacity: 0.4; animation-delay: -5s; }
-
-        @keyframes floatCloud {
-            0% { transform: translateX(-20px); }
-            100% { transform: translateX(20px); }
-        }
-
-        /* CHỊ HẰNG (SVG PURE) */
+        /* 2. CHỊ HẰNG BAY */
         .hang-nga {
             position: absolute;
-            top: 14%; right: 22%;
-            width: 180px;
-            z-index: 3;
-            filter: drop-shadow(0 0 12px rgba(255, 234, 167, 0.6));
+            top: 15%; right: 28%;
+            width: 190px;
+            z-index: 4;
+            filter: drop-shadow(0 0 15px rgba(255, 234, 167, 0.8));
             animation: hangFly 4s ease-in-out infinite alternate;
         }
 
         @keyframes hangFly {
             0% { transform: translateY(0) rotate(0deg); }
-            100% { transform: translateY(-15px) rotate(-2deg); }
+            100% { transform: translateY(-18px) rotate(-3deg); }
         }
 
-        /* CÂY ĐA & CHÚ CUỘI */
+        /* 3. CÂY ĐA KHỔNG LỒ & CUỘI THỔI SÁO */
         .tree-and-cuoi {
             position: absolute;
-            bottom: 30px; right: 2%;
-            width: 420px;
-            z-index: 4;
-            filter: drop-shadow(-5px 0 15px rgba(0,0,0,0.7));
+            bottom: -10px; right: -20px;
+            width: 620px;
+            height: 650px;
+            z-index: 5;
+            filter: drop-shadow(-8px 0 20px rgba(0,0,0,0.8));
         }
 
-        /* THỎ NGỌC */
+        /* 4. THỎ NGỌC NGỒI NGẮM TRĂNG */
         .tho-ngoc {
             position: absolute;
-            bottom: 45px; left: 18%;
-            width: 90px;
-            z-index: 5;
-            filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.5));
-            animation: rabbitHop 2.5s ease-in-out infinite alternate;
+            bottom: 45px; left: 16%;
+            width: 110px;
+            z-index: 6;
+            filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.6));
+            animation: rabbitLook 3s ease-in-out infinite alternate;
         }
 
-        @keyframes rabbitHop {
-            0% { transform: translateY(0); }
-            100% { transform: translateY(-12px); }
+        @keyframes rabbitLook {
+            0% { transform: translateY(0) scale(1); }
+            100% { transform: translateY(-6px) scale(1.02); }
         }
 
-        /* ĐỒI CỎ MẶT ĐẤT */
+        /* 5. MÂY TRÔI & MẶT ĐẤT */
+        .cloud {
+            position: absolute;
+            z-index: 2;
+            opacity: 0.45;
+            animation: floatCloud 18s ease-in-out infinite alternate;
+        }
+        .cloud-1 { top: 8%; left: 5%; width: 320px; }
+        .cloud-2 { top: 25%; right: 5%; width: 380px; animation-delay: -7s; }
+
+        @keyframes floatCloud {
+            0% { transform: translateX(-30px); }
+            100% { transform: translateX(30px); }
+        }
+
         .ground-svg {
             position: absolute;
             bottom: 0; left: 0;
-            width: 100%; height: 180px;
+            width: 100%; height: 160px;
             z-index: 3;
-        }
-
-        /* ĐÈN LỒNG BAY */
-        .lantern {
-            position: absolute;
-            width: 30px;
-            z-index: 2;
-            animation: lanternRise 12s linear infinite;
-        }
-        .l1 { left: 15%; bottom: -50px; animation-duration: 14s; }
-        .l2 { left: 35%; bottom: -50px; animation-duration: 10s; animation-delay: 3s; }
-        .l3 { left: 75%; bottom: -50px; animation-duration: 16s; animation-delay: 1s; }
-
-        @keyframes lanternRise {
-            0% { transform: translateY(0) scale(0.8); opacity: 0; }
-            20% { opacity: 0.9; }
-            80% { opacity: 0.8; }
-            100% { transform: translateY(-100vh) scale(1.1); opacity: 0; }
         }
     </style>
 </head>
 <body>
 
     <div class="scene">
-        <!-- ĐÈN LỒNG KHÍ CẦU VĂN HÓA -->
-        <svg class="lantern l1" viewBox="0 0 40 60">
-            <rect x="10" y="10" width="20" height="30" rx="5" fill="#e74c3c"/>
-            <polygon points="10,10 20,2 30,10" fill="#f1c40f"/>
-            <polygon points="10,40 20,48 30,40" fill="#f1c40f"/>
-            <line x1="20" y1="48" x2="20" y2="58" stroke="#f1c40f" stroke-width="2"/>
-            <circle cx="20" cy="25" r="4" fill="#ffeb3b" filter="drop-shadow(0 0 5px #ffeb3b)"/>
-        </svg>
-        <svg class="lantern l2" viewBox="0 0 40 60">
-            <rect x="10" y="10" width="20" height="30" rx="5" fill="#e67e22"/>
-            <polygon points="10,10 20,2 30,10" fill="#f1c40f"/>
-            <circle cx="20" cy="25" r="4" fill="#ffeb3b" filter="drop-shadow(0 0 5px #ffeb3b)"/>
-        </svg>
-        <svg class="lantern l3" viewBox="0 0 40 60">
-            <rect x="10" y="10" width="20" height="30" rx="5" fill="#e74c3c"/>
-            <circle cx="20" cy="25" r="4" fill="#ffeb3b" filter="drop-shadow(0 0 5px #ffeb3b)"/>
-        </svg>
+        <!-- TRĂNG RẰM TO BỰ -->
+        <div class="moon-glow"></div>
 
-        <!-- TRĂNG RẰM -->
-        <div class="moon-container">
-            <svg viewBox="0 0 200 200">
-                <defs>
-                    <radialGradient id="moonGlow" cx="50%" cy="50%" r="50%">
-                        <stop offset="0%" stop-color="#ffffff"/>
-                        <stop offset="60%" stop-color="#fff3a1"/>
-                        <stop offset="90%" stop-color="#fbc531"/>
-                        <stop offset="100%" stop-color="#e1b12c"/>
-                    </radialGradient>
-                </defs>
-                <circle cx="100" cy="100" r="85" fill="url(#moonGlow)" filter="drop-shadow(0 0 25px rgba(251, 197, 49, 0.8))"/>
-                <!-- Dấu vết bóng trăng cổ điển -->
-                <circle cx="70" cy="80" r="18" fill="#f5cd79" opacity="0.25"/>
-                <circle cx="120" cy="110" r="25" fill="#f5cd79" opacity="0.2"/>
-                <circle cx="130" cy="65" r="12" fill="#f5cd79" opacity="0.2"/>
-            </svg>
-        </div>
-
-        <!-- MÂY MỜ 2D Á ĐÔNG -->
+        <!-- MÂY 2D -->
         <svg class="cloud cloud-1" viewBox="0 0 200 60">
-            <path d="M 10,40 Q 30,10 70,20 Q 110,0 150,20 Q 180,10 190,35 Q 200,55 160,55 L 20,55 Q 0,55 10,40 Z" fill="#485460"/>
-            <path d="M 15,38 Q 33,12 68,22 Q 105,4 142,22 Q 172,12 182,35 Z" fill="#d2dae2" opacity="0.15"/>
+            <path d="M 10,40 Q 30,10 70,20 Q 110,0 150,20 Q 180,10 190,35 Q 200,55 160,55 L 20,55 Z" fill="#2d3548"/>
         </svg>
         <svg class="cloud cloud-2" viewBox="0 0 200 60">
-            <path d="M 10,40 Q 40,10 80,20 Q 120,5 160,25 Q 190,20 195,50 L 10,50 Z" fill="#1e272e"/>
+            <path d="M 10,40 Q 40,10 80,20 Q 120,5 160,25 Q 190,20 195,50 L 10,50 Z" fill="#1e2536"/>
         </svg>
 
-        <!-- CHỊ HẰNG NGA (PURE SVG VECTOR) -->
+        <!-- CHỊ HẰNG NGA -->
         <svg class="hang-nga" viewBox="0 0 200 250">
-            <!-- Dải lụa bay -->
             <path d="M 20,100 Q 60,20 120,50 Q 180,80 170,160 Q 160,210 100,220 Q 40,220 30,160" fill="none" stroke="#ff7675" stroke-width="8" stroke-linecap="round" opacity="0.85"/>
             <path d="M 10,110 Q 50,30 115,58 Q 170,90 160,165" fill="none" stroke="#ffeaa7" stroke-width="4" stroke-linecap="round"/>
-            
-            /* Váy đầm thướt tha */
             <path d="M 75,110 Q 60,160 40,210 Q 90,230 130,200 Q 120,150 105,110 Z" fill="#fd79a8"/>
             <path d="M 82,110 Q 70,160 55,205 Q 90,218 120,195 Q 110,150 100,110 Z" fill="#ffffff" opacity="0.9"/>
-            
-            /* Áo khoác cổ trang */
             <path d="M 78,80 L 65,115 L 90,120 L 102,115 L 92,80 Z" fill="#fab1a0"/>
             <path d="M 85,80 L 105,115 L 115,100 L 95,80 Z" fill="#ffeaa7"/>
-
-            /* Tay áo rủ */
             <path d="M 70,85 Q 40,110 30,140 Q 55,145 72,115 Z" fill="#fd79a8"/>
             <path d="M 100,85 Q 130,110 145,135 Q 125,140 105,115 Z" fill="#fd79a8"/>
-
-            /* Đầu & Tóc búi Hằng Nga */
-            <circle cx="88" cy="62" r="14" fill="#ffeaa7"/> <!-- Mặt -->
-            <path d="M 74,58 Q 88,42 102,58 Q 102,48 88,44 Q 74,48 74,58 Z" fill="#2d3436"/> <!-- Tóc mái -->
-            <circle cx="88" cy="40" r="10" fill="#2d3436"/> <!-- Búi tóc -->
-            <path d="M 88,30 L 88,22" stroke="#fdcb6e" stroke-width="3"/> <!-- Trâm cài -->
+            <circle cx="88" cy="62" r="14" fill="#ffeaa7"/>
+            <path d="M 74,58 Q 88,42 102,58 Q 102,48 88,44 Q 74,48 74,58 Z" fill="#2d3436"/>
+            <circle cx="88" cy="40" r="10" fill="#2d3436"/>
+            <path d="M 88,30 L 88,22" stroke="#fdcb6e" stroke-width="3"/>
             <circle cx="88" cy="20" r="3" fill="#e74c3c"/>
-
-            /* Dải lụa tay */
-            <path d="M 30,140 Q 10,180 35,200" fill="none" stroke="#ff7675" stroke-width="6"/>
         </svg>
 
-        <!-- THỎ NGỌC 2D (PURE SVG) -->
-        <svg class="tho-ngoc" viewBox="0 0 100 100">
-            <!-- Tai thỏ -->
-            <ellipse cx="40" cy="25" rx="6" ry="20" fill="#ffffff" transform="rotate(-10 40 25)"/>
-            <ellipse cx="40" cy="25" rx="3" ry="14" fill="#ffcaa1" transform="rotate(-10 40 25)"/>
-            <ellipse cx="55" cy="22" rx="6" ry="22" fill="#ffffff" transform="rotate(10 55 22)"/>
-            <ellipse cx="55" cy="22" rx="3" ry="15" fill="#ffcaa1" transform="rotate(10 55 22)"/>
-            <!-- Thân & Đầu -->
-            <ellipse cx="50" cy="68" rx="22" ry="18" fill="#ffffff"/>
-            <circle cx="48" cy="48" r="16" fill="#ffffff"/>
-            <!-- Mắt, mũi, má hồng -->
-            <circle cx="42" cy="45" r="2" fill="#2d3436"/>
-            <circle cx="54" cy="45" r="2" fill="#2d3436"/>
-            <polygon points="47,49 49,49 48,51" fill="#ff7675"/>
-            <circle cx="38" cy="50" r="3" fill="#ff7675" opacity="0.4"/>
-            <circle cx="58" cy="50" r="3" fill="#ff7675" opacity="0.4"/>
-            <!-- Đuôi thỏ -->
-            <circle cx="72" cy="68" r="6" fill="#ffffff"/>
-            <!-- Đào/Bánh trung thu thỏ ôm -->
-            <circle cx="40" cy="65" r="7" fill="#f1c40f"/>
+        <!-- THỎ NGỌC CỰC CUTE (SỬA LẠI DÁNG) -->
+        <svg class="tho-ngoc" viewBox="0 0 120 120">
+            <!-- Đuôi -->
+            <circle cx="28" cy="85" r="8" fill="#ffffff"/>
+            <!-- Đùi/Thân -->
+            <ellipse cx="52" cy="85" rx="28" ry="20" fill="#ffffff"/>
+            <!-- Cánh tay ôm ngực -->
+            <path d="M 60,78 Q 72,82 68,90" stroke="#f1f2f6" stroke-width="5" stroke-linecap="round" fill="none"/>
+            <!-- Đầu -->
+            <circle cx="70" cy="55" r="20" fill="#ffffff"/>
+            <!-- Mắt đen tròn xoe -->
+            <circle cx="78" cy="50" r="3" fill="#2d3436"/>
+            <circle cx="79" cy="49" r="1" fill="#ffffff"/>
+            <!-- Mũi hồng -->
+            <polygon points="85,53 87,55 85,56" fill="#ff7675"/>
+            <!-- Má hồng -->
+            <circle cx="72" cy="58" r="4" fill="#ff7675" opacity="0.35"/>
+            <!-- Tai dài ngẩng cao -->
+            <ellipse cx="62" cy="22" rx="6" ry="22" fill="#ffffff" transform="rotate(-12 62 22)"/>
+            <ellipse cx="62" cy="22" rx="3" ry="15" fill="#ffcaa1" transform="rotate(-12 62 22)"/>
+            <ellipse cx="75" cy="20" rx="6" ry="24" fill="#ffffff" transform="rotate(5 75 20)"/>
+            <ellipse cx="75" cy="20" rx="3" ry="16" fill="#ffcaa1" transform="rotate(5 75 20)"/>
         </svg>
 
-        <!-- CÂY ĐA & CHÚ CUỘI (PURE SVG) -->
-        <svg class="tree-and-cuoi" viewBox="0 0 400 400">
-            <defs>
-                <linearGradient id="trunkGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-                    <stop offset="0%" stop-color="#1e1005"/>
-                    <stop offset="50%" stop-color="#3d2314"/>
-                    <stop offset="100%" stop-color="#120903"/>
-                </linearGradient>
-            </defs>
+        <!-- CÂY ĐA SIÊU TO + CUỘI THỔI SÁO -->
+        <svg class="tree-and-cuoi" viewBox="0 0 500 550">
+            <!-- TÁN CÂY ĐA SIÊU LỚN -->
+            <path d="M 150,220 Q 80,100 200,50 Q 300,-10 420,40 Q 520,100 480,220 Q 450,300 350,280 Q 250,320 150,220 Z" fill="#0a1d0d"/>
+            <path d="M 180,190 Q 120,80 230,40 Q 320,0 420,50 Q 500,120 450,210 Q 380,260 280,240 Z" fill="#143818"/>
+            <path d="M 220,160 Q 170,70 260,30 Q 350,10 430,70 Q 480,130 420,190 Q 340,220 260,200 Z" fill="#1e4d22"/>
 
-            <!-- TÁN CÂY ĐA CỔ THỤ (Nhiều tầng lá) -->
-            <path d="M 180,180 Q 130,100 220,70 Q 280,30 350,90 Q 410,140 370,200 Q 320,240 250,220 Q 190,240 180,180 Z" fill="#0d2311"/>
-            <path d="M 200,160 Q 160,90 240,60 Q 290,20 360,80 Q 400,130 360,180 Q 300,210 240,190 Z" fill="#1b431e"/>
-            <path d="M 230,140 Q 200,80 260,50 Q 310,25 360,70 Q 385,110 350,150 Z" fill="#275b2c"/>
+            <!-- THÂN CÂY CỔ THỤ NÂU SẦM -->
+            <path d="M 330,520 Q 320,380 290,280 Q 260,210 230,170 L 265,165 Q 300,210 325,280 Q 360,390 410,520 Z" fill="#2d1a0e"/>
+            <!-- Cành lớn đâm ngang -->
+            <path d="M 300,260 Q 230,210 160,190 L 165,178 Q 240,198 310,245 Z" fill="#2d1a0e"/>
+            <!-- Rễ đa rủ tua rua -->
+            <path d="M 240,180 Q 230,320 220,520" stroke="#1d1008" stroke-width="6" fill="none"/>
+            <path d="M 210,190 Q 200,340 190,520" stroke="#1d1008" stroke-width="4" fill="none"/>
+            <path d="M 380,280 Q 390,390 400,520" stroke="#1d1008" stroke-width="5" fill="none"/>
 
-            <!-- RỄ & THÂN CÂY ĐA -->
-            <path d="M 280,380 Q 270,280 250,220 Q 230,180 210,160 L 235,155 Q 260,185 280,230 Q 310,300 340,380 Z" fill="url(#trunkGrad)"/>
-            <!-- Nhánh cây -->
-            <path d="M 260,210 Q 210,170 170,160 L 175,150 Q 215,160 268,195 Z" fill="url(#trunkGrad)"/>
-            <path d="M 290,240 Q 340,190 370,170 L 375,178 Q 340,200 295,250 Z" fill="url(#trunkGrad)"/>
-            <!-- Rễ phụ rủ xuống (Đặc trưng Cây Đa) -->
-            <path d="M 220,165 Q 215,250 210,380" stroke="#2c180b" stroke-width="4" fill="none"/>
-            <path d="M 200,160 Q 195,230 190,380" stroke="#2c180b" stroke-width="3" fill="none"/>
-            <path d="M 330,200 Q 335,280 340,380" stroke="#2c180b" stroke-width="4" fill="none"/>
-
-            <!-- CHÚ CUỘI NGỒI DƯỚI GỐC CÂY -->
-            <g transform="translate(180, 310)">
-                <!-- Thân & Áo Nâu Cuội -->
-                <path d="M 25,25 Q 10,35 15,60 L 65,60 Q 60,35 45,25 Z" fill="#8d5c2c"/>
-                <!-- Quần Lụa Tụi -->
-                <path d="M 15,55 Q 5,75 25,75 L 55,75 Q 70,75 65,55 Z" fill="#352312"/>
-                <!-- Đầu & Búi Tóc Củ Tỏi -->
-                <circle cx="35" cy="15" r="11" fill="#ffeaa7"/>
-                <path d="M 25,12 Q 35,2 45,12 Q 45,6 35,4 Q 25,6 25,12 Z" fill="#2d3436"/>
-                <circle cx="35" cy="3" r="4" fill="#2d3436"/> <!-- Búi tóc -->
-                <!-- Tay ôm gối -->
-                <path d="M 20,35 Q 35,48 50,35" stroke="#ffeaa7" stroke-width="6" stroke-linecap="round" fill="none"/>
-                <!-- Rìu đốn gỗ tựa bên cạnh -->
-                <line x1="62" y1="20" x2="75" y2="70" stroke="#636e72" stroke-width="4"/>
-                <path d="M 58,22 Q 68,15 72,28 Z" fill="#b2bec3"/>
+            <!-- CHÚ CUỘI THỔI SÁO NGỒI TỰA GỐC ĐA -->
+            <g transform="translate(200, 410)">
+                <!-- Thân Cuội -->
+                <path d="M 30,30 Q 15,40 20,70 L 70,70 Q 65,40 50,30 Z" fill="#7f4f24"/>
+                <path d="M 20,65 Q 10,85 30,85 L 60,85 Q 75,85 70,65 Z" fill="#36200d"/>
+                <!-- Đầu & Búi tóc -->
+                <circle cx="40" cy="20" r="12" fill="#ffeaa7"/>
+                <path d="M 30,16 Q 40,6 50,16 Q 50,10 40,8 Q 30,10 30,16 Z" fill="#2d3436"/>
+                <circle cx="40" cy="6" r="4.5" fill="#2d3436"/>
+                <!-- TAY CẦM SÁO TRÚC GHÉ MÔI THỔI -->
+                <line x1="15" y1="28" x2="65" y2="20" stroke="#f1c40f" stroke-width="4" stroke-linecap="round"/> <!-- Cây sáo -->
+                <path d="M 25,45 Q 35,26 40,26" stroke="#ffeaa7" stroke-width="5" stroke-linecap="round" fill="none"/> <!-- Tay trái -->
+                <path d="M 55,45 Q 48,25 43,25" stroke="#ffeaa7" stroke-width="5" stroke-linecap="round" fill="none"/> <!-- Tay phải -->
+                <!-- Rìu tựa bên hông -->
+                <line x1="75" y1="35" x2="85" y2="80" stroke="#636e72" stroke-width="4"/>
+                <path d="M 70,36 Q 82,28 86,42 Z" fill="#b2bec3"/>
             </g>
         </svg>
 
-        <!-- MẶT ĐẤT & ĐỒI CỎ 2D -->
-        <svg class="ground-svg" viewBox="0 0 1200 180" preserveAspectRatio="none">
-            <path d="M 0,80 Q 300,20 600,60 T 1200,30 L 1200,180 L 0,180 Z" fill="#091309"/>
-            <path d="M 0,100 Q 400,50 800,90 T 1200,70 L 1200,180 L 0,180 Z" fill="#050a05"/>
+        <!-- MẶT ĐẤT -->
+        <svg class="ground-svg" viewBox="0 0 1200 160" preserveAspectRatio="none">
+            <path d="M 0,60 Q 400,10 800,50 T 1200,20 L 1200,160 L 0,160 Z" fill="#061208"/>
         </svg>
     </div>
 
