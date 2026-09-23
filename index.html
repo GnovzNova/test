@@ -14,9 +14,9 @@
             user-select: none;
         }
 
-        /* BẦU TRỜI SAO LÀM NỀN TOÀN MÀN HÌNH */
+        /* BẦU TRỜI SAO NỀN TOÀN MÀN HÌNH (CỐ ĐỊNH) */
         .starry-sky {
-            position: absolute;
+            position: fixed;
             top: 0; left: 0;
             width: 100vw; height: 100vh;
             background: radial-gradient(ellipse at bottom, #1b2735 0%, #090a0f 100%);
@@ -69,20 +69,20 @@
             box-shadow: 0 0 35px rgba(253, 203, 110, 0.9);
         }
 
-        /* MẶT TRĂNG TRÒN OUTRO (HIỆN KHI RỜI XA MẶT TRĂNG) */
+        /* MẶT TRĂNG TRÒN OUTRO (HIỆN KHI CẤT CÁNH BAY LÊN) */
         #full-moon {
-            position: absolute;
-            top: 15vh;
+            position: fixed;
+            top: 12vh;
             left: 50%;
-            transform: translateX(-50%) scale(0.3);
-            width: 300px;
-            height: 300px;
+            transform: translateX(-50%) scale(0.4);
+            width: 280px;
+            height: 280px;
             background: radial-gradient(circle at 35% 35%, #ffffff 0%, #fff3a0 50%, #fbc531 100%);
             border-radius: 50%;
             box-shadow: 0 0 60px #fff, 0 0 120px #fbc531;
             z-index: 8;
             opacity: 0;
-            transition: transform 5s cubic-bezier(0.1, 0.8, 0.2, 1), opacity 4s ease;
+            transition: transform 3.5s cubic-bezier(0.1, 0.8, 0.2, 1), opacity 3s ease;
         }
 
         #full-moon.active {
@@ -90,20 +90,31 @@
             transform: translateX(-50%) scale(1);
         }
 
-        /* THẾ GIỚI MẶT TRĂNG - BAO PHỦ TOÀN MÀN HÌNH */
+        /* THẾ GIỚI MẶT TRĂNG - LUÔN PHỦ KÍN MÀN HÌNH */
         #moon-world {
-            position: absolute;
+            position: fixed;
             top: 0; left: 0;
             width: 100vw; height: 100vh;
-            background: radial-gradient(circle at 50% 30%, #1a2536 0%, #090e17 70%, #02050e 100%);
             z-index: 10;
-            transition: transform 5s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 4s ease;
-            transform-origin: 50% 100%;
+            transition: opacity 2.5s ease;
         }
 
-        /* MÔ PHỎNG PHI HÀNH GIA CẤT CÁNH: CẢNH VẬT THU NHỎ VÀ LỜI ĐI VÀO KHÔNG GIAN */
+        /* CONTAINER CHỨA CÁC VẬT THỂ ĐỂ TRƯỢT XUỐNG KHI CẤT CÁNH */
+        .moon-objects {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            transition: transform 3s cubic-bezier(0.4, 0, 0.2, 1), opacity 2.5s ease;
+        }
+
+        /* HIỆU ỨNG CẤT CÁNH: CẢNH VẬT TRƯỢT XUỐNG DƯỚI & MỜ DẦN (KHÔNG BỊ THU THÀNH HỘP) */
+        #moon-world.takeoff .moon-objects {
+            transform: translateY(80vh) scale(1.2);
+            opacity: 0;
+            pointer-events: none;
+        }
+
         #moon-world.takeoff {
-            transform: scale(0.08) translateY(-300vh);
             opacity: 0;
             pointer-events: none;
         }
@@ -114,10 +125,9 @@
             bottom: 0; left: 0;
             width: 100vw; height: 180px;
             z-index: 10;
-            transition: all 1.2s ease;
+            transition: filter 1.2s ease;
         }
 
-        /* ĐẤT MẶT TRĂNG KHI SẴN SÀNG BẤM */
         #moon-ground.ready-to-click {
             cursor: pointer;
             filter: drop-shadow(0 0 20px #fff3a0);
@@ -129,7 +139,7 @@
             100% { filter: drop-shadow(0 0 30px #fff3a0); }
         }
 
-        /* MÀU ĐẤT SÁNG LÊN GIỐNG HOÀN TOÀN MÀU TRĂNG RẰM OUTRO (#fff3a0 & #fbc531) */
+        /* MÀU ĐẤT SÁNG LÊN GIỐNG HOÀN TOÀN MÀU TRĂNG RẰM */
         #moon-ground path.ground-layer1 {
             fill: #2c3e50;
             transition: fill 1.2s ease;
@@ -150,7 +160,7 @@
             filter: drop-shadow(0 0 50px #fbc531) brightness(1.3) !important;
         }
 
-        /* THÔNG BÁO HƯỚNG DẪN BẤM VÀO ĐẤT */
+        /* HƯỚNG DẪN BẤM CẤT CÁNH */
         #ground-hint {
             position: absolute;
             bottom: 190px;
@@ -274,12 +284,12 @@
 
         /* CẢNH TRÁI ĐẤT PHÍA DƯỚI (OUTRO) */
         #earth-world {
-            position: absolute;
+            position: fixed;
             bottom: 0; left: 0;
             width: 100vw; height: 100vh;
             z-index: 5;
             opacity: 0;
-            transition: opacity 3s ease;
+            transition: opacity 2.5s ease;
             pointer-events: none;
         }
 
@@ -302,7 +312,7 @@
         }
 
         #fireworks-canvas {
-            position: absolute;
+            position: fixed;
             top: 0; left: 0;
             width: 100vw; height: 100vh;
             z-index: 15;
@@ -340,7 +350,7 @@
 </head>
 <body>
 
-    <!-- BẦU TRỜI SAO NỀN -->
+    <!-- BẦU TRỜI SAO NỀN CỐ ĐỊNH -->
     <div class="starry-sky"></div>
 
     <!-- MÀN HÌNH INTRO -->
@@ -350,55 +360,57 @@
         <button class="intro-btn" onclick="startExperience()">Bắt Đầu Ngắm Trăng</button>
     </div>
 
-    <!-- MẶT TRĂNG TRÒN OUTRO KHI PHI HÀNH GIA LÊN CAO -->
+    <!-- MẶT TRĂNG TRÒN OUTRO KHI CẤT CÁNH -->
     <div id="full-moon"></div>
 
     <!-- THẾ GIỚI MẶT TRĂNG CẬN CẢNH -->
     <div id="moon-world">
         <div id="ground-hint">✨ Hãy chạm vào mặt đất để cất cánh nhìn về Trái Đất ✨</div>
 
-        <!-- MẢNH ĐẤT MẶT TRĂNG -->
-        <svg id="moon-ground" viewBox="0 0 1440 180" preserveAspectRatio="none" onclick="onGroundClick()">
-            <path class="ground-layer1" d="M0,60 Q360,110 720,50 Q1080,10 1440,60 L1440,180 L0,180 Z"/>
-            <path class="ground-layer2" d="M0,80 Q400,40 800,90 Q1200,140 1440,70 L1440,180 L0,180 Z" opacity="0.95"/>
-        </svg>
+        <div class="moon-objects">
+            <!-- MẢNH ĐẤT MẶT TRĂNG -->
+            <svg id="moon-ground" viewBox="0 0 1440 180" preserveAspectRatio="none" onclick="onGroundClick()">
+                <path class="ground-layer1" d="M0,60 Q360,110 720,50 Q1080,10 1440,60 L1440,180 L0,180 Z"/>
+                <path class="ground-layer2" d="M0,80 Q400,40 800,90 Q1200,140 1440,70 L1440,180 L0,180 Z" opacity="0.95"/>
+            </svg>
 
-        <!-- HẰNG NGA -->
-        <div class="hang-nga-container">
-            <svg width="160" height="200" viewBox="0 0 160 200">
-                <path d="M 30,120 Q 10,60 80,30 Q 150,20 130,110 Q 110,170 50,160" fill="none" stroke="#ff7675" stroke-width="4" stroke-linecap="round" opacity="0.85"/>
-                <path d="M 70,80 L 35,185 Q 80,200 125,180 L 95,80 Z" fill="#fd79a8"/>
-                <path d="M 72,80 L 50,183 Q 80,192 110,180 L 90,80 Z" fill="#ffffff" opacity="0.8"/>
-                <path d="M 60,60 Q 80,50 100,60 L 110,90 Q 80,100 50,90 Z" fill="#ffeaa7"/>
-                <path d="M 50,65 Q 30,85 20,105 Q 35,110 55,90 Z" fill="#fd79a8"/>
-                <path d="M 110,65 Q 130,85 140,105 Q 125,110 105,90 Z" fill="#fd79a8"/>
-                <circle cx="80" cy="40" r="12" fill="#ffeaa7"/>
-                <path d="M 68,38 C 68,22 92,22 92,38 C 92,28 68,28 68,38 Z" fill="#2d3436"/>
-                <circle cx="80" cy="22" r="7" fill="#2d3436"/>
-                <line x1="70" y1="20" x2="92" y2="20" stroke="#fdcb6e" stroke-width="2"/>
-                <circle cx="80" cy="75" r="8" fill="#fff" filter="drop-shadow(0 0 6px #ffeaa7)"/>
+            <!-- HẰNG NGA -->
+            <div class="hang-nga-container">
+                <svg width="160" height="200" viewBox="0 0 160 200">
+                    <path d="M 30,120 Q 10,60 80,30 Q 150,20 130,110 Q 110,170 50,160" fill="none" stroke="#ff7675" stroke-width="4" stroke-linecap="round" opacity="0.85"/>
+                    <path d="M 70,80 L 35,185 Q 80,200 125,180 L 95,80 Z" fill="#fd79a8"/>
+                    <path d="M 72,80 L 50,183 Q 80,192 110,180 L 90,80 Z" fill="#ffffff" opacity="0.8"/>
+                    <path d="M 60,60 Q 80,50 100,60 L 110,90 Q 80,100 50,90 Z" fill="#ffeaa7"/>
+                    <path d="M 50,65 Q 30,85 20,105 Q 35,110 55,90 Z" fill="#fd79a8"/>
+                    <path d="M 110,65 Q 130,85 140,105 Q 125,110 105,90 Z" fill="#fd79a8"/>
+                    <circle cx="80" cy="40" r="12" fill="#ffeaa7"/>
+                    <path d="M 68,38 C 68,22 92,22 92,38 C 92,28 68,28 68,38 Z" fill="#2d3436"/>
+                    <circle cx="80" cy="22" r="7" fill="#2d3436"/>
+                    <line x1="70" y1="20" x2="92" y2="20" stroke="#fdcb6e" stroke-width="2"/>
+                    <circle cx="80" cy="75" r="8" fill="#fff" filter="drop-shadow(0 0 6px #ffeaa7)"/>
+                </svg>
+            </div>
+
+            <!-- CÂY ĐA & CHÚ CUỘI -->
+            <svg class="banyan-tree" viewBox="0 0 500 550">
+                <path d="M 120,220 Q 60,70 210,30 Q 360,-20 480,40 Q 540,140 490,260 Q 430,350 320,300 Z" fill="#0b1a10"/>
+                <path d="M 350,550 C 320,420 280,300 250,220 C 220,150 180,120 160,110 L 190,100 C 220,130 250,180 280,250 C 330,360 370,450 450,550 Z" fill="#2d1500"/>
+                <g transform="translate(210, 400)">
+                    <ellipse cx="40" cy="80" rx="25" ry="15" fill="#1e1005"/>
+                    <path d="M 25,45 C 20,60 25,80 35,85 L 70,85 C 80,80 80,60 75,45 Z" fill="#5c3a21"/>
+                    <circle cx="50" cy="28" r="11" fill="#ffeaa7"/>
+                    <line x1="10" y1="32" x2="85" y2="26" stroke="#f1c40f" stroke-width="4" stroke-linecap="round"/>
+                </g>
+            </svg>
+
+            <!-- THỎ NGỌC -->
+            <svg class="rabbit-gem" width="70" height="80" viewBox="0 0 100 110">
+                <ellipse cx="45" cy="78" rx="25" ry="18" fill="#ffffff"/>
+                <circle cx="62" cy="50" r="16" fill="#ffffff"/>
+                <ellipse cx="55" cy="22" rx="5" ry="16" fill="#ffffff" transform="rotate(-10 55 22)"/>
+                <ellipse cx="66" cy="20" rx="5" ry="17" fill="#ffffff" transform="rotate(8 66 20)"/>
             </svg>
         </div>
-
-        <!-- CÂY ĐA & CHÚ CUỘI -->
-        <svg class="banyan-tree" viewBox="0 0 500 550">
-            <path d="M 120,220 Q 60,70 210,30 Q 360,-20 480,40 Q 540,140 490,260 Q 430,350 320,300 Z" fill="#0b1a10"/>
-            <path d="M 350,550 C 320,420 280,300 250,220 C 220,150 180,120 160,110 L 190,100 C 220,130 250,180 280,250 C 330,360 370,450 450,550 Z" fill="#2d1500"/>
-            <g transform="translate(210, 400)">
-                <ellipse cx="40" cy="80" rx="25" ry="15" fill="#1e1005"/>
-                <path d="M 25,45 C 20,60 25,80 35,85 L 70,85 C 80,80 80,60 75,45 Z" fill="#5c3a21"/>
-                <circle cx="50" cy="28" r="11" fill="#ffeaa7"/>
-                <line x1="10" y1="32" x2="85" y2="26" stroke="#f1c40f" stroke-width="4" stroke-linecap="round"/>
-            </g>
-        </svg>
-
-        <!-- THỎ NGỌC -->
-        <svg class="rabbit-gem" width="70" height="80" viewBox="0 0 100 110">
-            <ellipse cx="45" cy="78" rx="25" ry="18" fill="#ffffff"/>
-            <circle cx="62" cy="50" r="16" fill="#ffffff"/>
-            <ellipse cx="55" cy="22" rx="5" ry="16" fill="#ffffff" transform="rotate(-10 55 22)"/>
-            <ellipse cx="66" cy="20" rx="5" ry="17" fill="#ffffff" transform="rotate(8 66 20)"/>
-        </svg>
 
         <div id="lantern-container"></div>
     </div>
@@ -516,15 +528,14 @@
             if (!canClickGround || hasZoomed) return;
             hasZoomed = true;
 
-            // 1. Mảnh đất đổi sang màu vàng ấm của trăng Rằm (#fff3a0 / #fbc531)
+            // Đổi màu mảnh đất sang màu vàng trăng Rằm
             moonGround.classList.remove('ready-to-click');
             moonGround.classList.add('brightened');
             groundHint.classList.remove('show');
 
-            // 2. Chờ 1 giây để hiệu ứng đổi màu đất hoàn tất rồi cất cánh
             setTimeout(() => {
                 triggerTakeoff();
-            }, 1000);
+            }, 800);
         }
 
         function triggerTakeoff() {
@@ -532,23 +543,23 @@
             const fullMoon = document.getElementById('full-moon');
             const earthWorld = document.getElementById('earth-world');
 
-            // Cất cánh bay lên: Cảnh vật thu nhỏ và lao xuống dưới mượt mà
+            // Cảnh vật trượt xuống dưới & mờ dần (không bao giờ co lại thành hộp)
             moonWorld.classList.add('takeoff');
 
-            // Vầng trăng tròn xuất hiện từ khoảng không
+            // Mặt trăng tròn dần hiện ra giữa bầu trời sao
             setTimeout(() => {
                 fullMoon.classList.add('active');
-            }, 1200);
+            }, 800);
 
-            // Bóng Trái Đất hiện lên dưới góc nhìn
+            // Cảnh Trái Đất bên dưới hiện ra
             setTimeout(() => {
                 earthWorld.classList.add('active');
-            }, 2500);
+            }, 1800);
 
-            // Pháo hoa bắt đầu nổ
+            // Bắt đầu pháo hoa
             setTimeout(() => {
                 startFireworksShow();
-            }, 4200);
+            }, 3000);
         }
 
         /* PHÁO HOA */
