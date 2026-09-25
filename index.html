@@ -230,7 +230,9 @@
       isAwake: false,
       isHovered: false,
       hoverLocked: false,
-      hoverAmount: 0
+      hoverAmount: 0,
+      finalGlowProgress: 0,
+      finalGlowReady: false
     };
 
     // Cache moon rendering so the awakening does not rebuild radial gradients every frame.
@@ -329,6 +331,8 @@
       moon.hoverLocked = false;
       moon.isHovered = false;
       moon.hoverAmount = 0;
+      moon.finalGlowProgress = 0;
+      moon.finalGlowReady = false;
 
       let blinkCount = 0;
       const blinkInterval = setInterval(() => {
@@ -484,10 +488,12 @@
       const mouseX = e.clientX - rect.left;
       const mouseY = e.clientY - rect.top - cameraOffsetY;
 
-      if (!moon.hoverLocked && (currentState === STATES.MOON_AWAKENING || currentState === STATES.INTERACTIVE_SKY || currentState === STATES.MOON_GLOWING_UP)) {
+      // Hover is intentionally available ONLY before the first Moon click.
+      // Once clicked, hover is permanently disabled for the rest of the scene.
+      if (!moon.hoverLocked && currentState === STATES.MOON_AWAKENING) {
         const dist = Math.hypot(mouseX - moon.x, mouseY - moon.y);
-        moon.isHovered = dist < moon.radius * 1.3;
-      } else if (moon.hoverLocked) {
+        moon.isHovered = dist < moon.radius * 1.35;
+      } else {
         moon.isHovered = false;
       }
     });
@@ -587,6 +593,7 @@
 
       // 20s automatic fireworks show. No click launches fireworks.
       currentState = STATES.FIREWORKS_SHOW;
+      fwLaneCursor = 0;
       clearFireworkEngine();
       fireworkShowTick();
       const fireworkInterval = setInterval(fireworkShowTick, 760);
@@ -1199,6 +1206,13 @@
       }
     }
 
+    // Even launch lanes: every few rockets sweep from left edge -> center -> right edge
+    // so the show does not collapse into the middle of the screen.
+    const FW_LAUNCH_LANES = [
+      0.035, 0.10, 0.18, 0.27, 0.38, 0.50, 0.62, 0.73, 0.82, 0.90, 0.965
+    ];
+    let fwLaneCursor = 0;
+
     function fwGetRandomShellSize() {
       const base = 2.7;
       const maxVariance = Math.min(1.5, base);
@@ -1206,21 +1220,15 @@
       const size = base - variance;
       const height = maxVariance === 0 ? Math.random() : 1 - (variance / maxVariance);
 
-      // Spread launch/burst positions over the whole width, including both screen edges.
-      // Keep a substantial center share so the old composition is still recognizable.
-      const zone = Math.random();
-      let x;
-      if (zone < 0.30) {
-        x = Math.random() * 0.14 + 0.02;        // left edge
-      } else if (zone < 0.60) {
-        x = Math.random() * 0.14 + 0.84;        // right edge
-      } else {
-        x = Math.random() * 0.56 + 0.22;        // center / inner field
-      }
+      // Take the next evenly spaced horizontal lane, with only a small jitter so the composition breathes.
+      const lane = FW_LAUNCH_LANES[fwLaneCursor % FW_LAUNCH_LANES.length];
+      fwLaneCursor++;
+      const jitter = (Math.random() - 0.5) * 0.028;
+      const x = Math.max(0.018, Math.min(0.982, lane + jitter));
 
       return {
         size,
-        x: Math.max(0.01, Math.min(0.99, x)),
+        x,
         height: height * 0.75
       };
     }
@@ -1241,30 +1249,30 @@
       const b = fwGetRandomShellSize();
       const left = new FWShell(FW_SHELLS[(Math.random() * FW_SHELLS.length) | 0](a.size));
       const right = new FWShell(FW_SHELLS[(Math.random() * FW_SHELLS.length) | 0](b.size));
-      left.launch(0.03 + Math.random() * 0.15, a.height);
+      left.launch(a.x, a.height);
       setTimeout(() => {
         if (currentState === STATES.FIREWORKS_SHOW) {
-          right.launch(0.82 + Math.random() * 0.15, b.height);
+          right.launch(b.x, b.height);
         }
       }, 110);
     }
 
     function launchFireworkTriple() {
-      const shellFactory = FW_SHELLS[(Math.random() * FW_SHELLS.length) | 0];
-      const center = new FWShell(shellFactory(2.4));
-      center.launch(0.5, 0.62);
+      const shellA = fwGetRandomShellSize();
+      const shellB = fwGetRandomShellSize();
+      const shellC = fwGetRandomShellSize();
+      const factory = () => FW_SHELLS[(Math.random() * FW_SHELLS.length) | 0];
+
+      const a = new FWShell(factory()(shellA.size));
+      const b = new FWShell(factory()(shellB.size));
+      const c = new FWShell(factory()(shellC.size));
+      a.launch(shellA.x, shellA.height);
       setTimeout(() => {
-        if (currentState === STATES.FIREWORKS_SHOW) {
-          const left = new FWShell(shellFactory(1.7));
-          left.launch(0.04 + Math.random() * 0.14, 0.22);
-        }
-      }, 1000 + Math.random() * 280);
+        if (currentState === STATES.FIREWORKS_SHOW) b.launch(shellB.x, shellB.height);
+      }, 150);
       setTimeout(() => {
-        if (currentState === STATES.FIREWORKS_SHOW) {
-          const right = new FWShell(shellFactory(1.7));
-          right.launch(0.82 + Math.random() * 0.14, 0.22);
-        }
-      }, 1050 + Math.random() * 280);
+        if (currentState === STATES.FIREWORKS_SHOW) c.launch(shellC.x, shellC.height);
+      }, 300);
     }
 
     function fireworkShowTick() {
@@ -1488,13 +1496,21 @@
           moon.hoverAmount = 0;
         } else {
           const hoverTarget = moon.isHovered ? 1 : 0;
-          moon.hoverAmount = (moon.hoverAmount || 0) + (hoverTarget - (moon.hoverAmount || 0)) * 0.08;
+          moon.hoverAmount = (moon.hoverAmount || 0) + (hoverTarget - (moon.hoverAmount || 0)) * 0.10;
         }
-        const currentR = moon.radius * (1 + moon.hoverAmount * 0.05);
 
-        const glowDiameter = currentR * 3.6;
-        // Keep the wake/final glow clearly visible while retaining the soft look.
-        const glowStrength = Math.min(0.68, 0.20 + moon.glowOpacity * 0.85 + moon.hoverAmount * 0.10);
+        const currentR = moon.radius * (1 + moon.hoverAmount * 0.055);
+        const hoverGlow = moon.hoverAmount;
+        const finalGlow = moon.finalGlowProgress || 0;
+
+        // Soft aura: stronger on hover, and gradually stronger during the post-lantern glow-up.
+        const glowDiameter = currentR * (3.7 + finalGlow * 1.0 + hoverGlow * 0.45);
+        const glowStrength = Math.min(0.86,
+          0.16 +
+          moon.glowOpacity * 0.92 +
+          hoverGlow * 0.24 +
+          finalGlow * 0.16
+        );
         ctx.globalAlpha = moon.opacity * glowStrength;
         ctx.drawImage(
           moonGlowSprite,
@@ -1504,6 +1520,21 @@
           glowDiameter
         );
 
+        // Extra warm light pass makes a hovered Moon visibly "light up" without turning into a bloom blob.
+        if (hoverGlow > 0.001 || finalGlow > 0.001) {
+          ctx.globalCompositeOperation = 'lighter';
+          ctx.globalAlpha = moon.opacity * (hoverGlow * 0.22 + finalGlow * 0.18);
+          ctx.drawImage(
+            moonGlowSprite,
+            moon.x - glowDiameter * 0.42,
+            moon.y - glowDiameter * 0.42,
+            glowDiameter * 0.84,
+            glowDiameter * 0.84
+          );
+          ctx.globalCompositeOperation = 'source-over';
+        }
+
+        // Moon body. During the final glow-up, a restrained additive pass makes the Moon itself brighten.
         ctx.globalAlpha = moon.opacity;
         const diameter = currentR * 2;
         ctx.drawImage(
@@ -1513,6 +1544,19 @@
           diameter,
           diameter
         );
+
+        if (finalGlow > 0.001) {
+          ctx.globalCompositeOperation = 'lighter';
+          ctx.globalAlpha = moon.opacity * Math.min(0.16, finalGlow * 0.16);
+          ctx.drawImage(
+            moonBodySprite,
+            moon.x - diameter * 0.49,
+            moon.y - diameter * 0.49,
+            diameter * 0.98,
+            diameter * 0.98
+          );
+          ctx.globalCompositeOperation = 'source-over';
+        }
 
         ctx.restore();
       }
@@ -1559,7 +1603,29 @@
 
         if (currentState === STATES.WAITING_LANTERNS_CLEAR && lanterns.length === 0) {
           currentState = STATES.MOON_GLOWING_UP;
-          moon.glowOpacity = 0.55;
+          moon.finalGlowProgress = 0;
+          moon.finalGlowReady = false;
+          moon.isHovered = false;
+
+          // After the last lantern disappears, the Moon slowly wakes back up.
+          const glowStart = performance.now();
+          const glowFrom = Math.max(0.12, moon.glowOpacity || 0.12);
+          const glowTo = 0.72;
+          const glowDuration = 4200;
+
+          (function animateFinalMoonGlow(now) {
+            if (currentState !== STATES.MOON_GLOWING_UP) return;
+            const p = Math.min(1, (now - glowStart) / glowDuration);
+            const ease = 0.5 - Math.cos(p * Math.PI) / 2;
+            moon.finalGlowProgress = ease;
+            moon.glowOpacity = glowFrom + (glowTo - glowFrom) * ease;
+
+            if (p < 1) {
+              requestAnimationFrame(animateFinalMoonGlow);
+            } else {
+              moon.finalGlowReady = true;
+            }
+          })(performance.now());
         }
       }
 
