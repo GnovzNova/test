@@ -144,9 +144,9 @@
     let cardTypingToken = 0;
 
     const GREETINGS = [
-      "Gửi em bé,\nChúc em có một đêm Trung Thu thật ấm áp và tràn ngập niềm vui ✨\nDù bầu trời ngoài kia có rộng lớn thế nào, em vẫn luôn là điều đặc biệt nhất.",
-      "Cảm ơn em đã xuất hiện và làm cho những ngày bình thường trở nên thật ngọt ngào 🌕\nMong cho nụ cười của em bé luôn rạng rỡ như ánh trăng đêm nay.",
-      "Mặt trăng nhỏ này là dành riêng cho em đấy ❤️\nHy vọng chúng ta sẽ cùng nhau đi qua thật nhiều mùa Trung Thu trọn vẹn và hạnh phúc hơn nữa."
+      "Gửi em bé!\nTrung Thu rồi, chúc em bé có một đêm thật vui, thật ấm áp và nhận được thật nhiều điều dễ thương nhá\nNhớ cười nhiều một chút, vì em bé cười nhìn đáng yêu lắm",
+      "Chúc em bé những ngày sắp tới sẽ có thật nhiều niềm vui, ít buồn phiền, mệt mỏi hơn\nCó thể sẽ có những hôm em bé mệt, những hôm chẳng vui tí nào, nhưng mong em bé vẫn luôn có những điều nhỏ nhỏ khiến mình thấy nhẹ lòng",
+      "Mặt trăng đêm nay tui hái xuống dành tặng riêng cho em bé\nChúc em bé sẽ mãi tỏa sáng như vầng trăng\nTuy có lúc tròn, lúc khuyết\nNhưng luôn luôn là ánh nguyệt soi sáng màn đêm!\n\nCảm ơn em bé!\nVì đã tới bên tui, và đồng hành cùng tui\nTui mong rằng sau này khi được gặp em bé ở Hà Nội\nChúng ta sẽ lại yêu nhau như cách chúng ta đã từng!\n\n我爱你"
     ];
 
     // State Machine States
@@ -248,9 +248,9 @@
         MOON_GLOW_SIZE / 2, MOON_GLOW_SIZE / 2, 0,
         MOON_GLOW_SIZE / 2, MOON_GLOW_SIZE / 2, MOON_GLOW_SIZE / 2
       );
-      g.addColorStop(0, 'rgba(255, 247, 170, 0.46)');
-      g.addColorStop(0.18, 'rgba(254, 240, 138, 0.24)');
-      g.addColorStop(0.42, 'rgba(253, 224, 71, 0.075)');
+      g.addColorStop(0, 'rgba(255, 247, 170, 0.62)');
+      g.addColorStop(0.18, 'rgba(254, 240, 138, 0.34)');
+      g.addColorStop(0.42, 'rgba(253, 224, 71, 0.11)');
       g.addColorStop(1, 'rgba(253, 224, 71, 0)');
       gc.fillStyle = g;
       gc.fillRect(0, 0, MOON_GLOW_SIZE, MOON_GLOW_SIZE);
@@ -417,8 +417,8 @@
         speedY: Math.random() * 0.40 + 1.05,
         scale: scale,
         opacity: Math.random() * 0.30 + 0.70,
-        size: 24 * scale,
-        hitRadius: 24 * scale,
+        size: 29 * scale,
+        hitRadius: 29 * scale,
         index: index
       };
     }
@@ -591,14 +591,14 @@
 
       await sleep(2000);
 
-      // 20s automatic fireworks show. No click launches fireworks.
+      // 30s automatic fireworks show. No click launches fireworks.
       currentState = STATES.FIREWORKS_SHOW;
       fwLaneCursor = 0;
       clearFireworkEngine();
       fireworkShowTick();
       const fireworkInterval = setInterval(fireworkShowTick, 760);
 
-      await sleep(20000);
+      await sleep(30000);
       clearInterval(fireworkInterval);
 
       // Keep simulating until the LAST star/spark/flash is genuinely gone.
@@ -1505,11 +1505,11 @@
 
         // Soft aura: stronger on hover, and gradually stronger during the post-lantern glow-up.
         const glowDiameter = currentR * (3.7 + finalGlow * 1.0 + hoverGlow * 0.45);
-        const glowStrength = Math.min(0.86,
+        const glowStrength = Math.min(0.98,
           0.16 +
-          moon.glowOpacity * 0.92 +
+          moon.glowOpacity * 1.05 +
           hoverGlow * 0.24 +
-          finalGlow * 0.16
+          finalGlow * 0.22
         );
         ctx.globalAlpha = moon.opacity * glowStrength;
         ctx.drawImage(
@@ -1523,7 +1523,7 @@
         // Extra warm light pass makes a hovered Moon visibly "light up" without turning into a bloom blob.
         if (hoverGlow > 0.001 || finalGlow > 0.001) {
           ctx.globalCompositeOperation = 'lighter';
-          ctx.globalAlpha = moon.opacity * (hoverGlow * 0.22 + finalGlow * 0.18);
+          ctx.globalAlpha = moon.opacity * (hoverGlow * 0.28 + finalGlow * 0.30);
           ctx.drawImage(
             moonGlowSprite,
             moon.x - glowDiameter * 0.42,
@@ -1547,7 +1547,7 @@
 
         if (finalGlow > 0.001) {
           ctx.globalCompositeOperation = 'lighter';
-          ctx.globalAlpha = moon.opacity * Math.min(0.16, finalGlow * 0.16);
+          ctx.globalAlpha = moon.opacity * Math.min(0.16, finalGlow * 0.22);
           ctx.drawImage(
             moonBodySprite,
             moon.x - diameter * 0.49,
@@ -1610,7 +1610,7 @@
           // After the last lantern disappears, the Moon slowly wakes back up.
           const glowStart = performance.now();
           const glowFrom = Math.max(0.12, moon.glowOpacity || 0.12);
-          const glowTo = 0.72;
+          const glowTo = 0.88;
           const glowDuration = 4200;
 
           (function animateFinalMoonGlow(now) {
