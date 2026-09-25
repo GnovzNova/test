@@ -3,684 +3,291 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Trung Thu Rằm Tháng Tám - Đêm Trăng Tròn 🌕</title>
+    <title>Pháo Hoa Giống Video</title>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        html, body {
-            width: 100%; height: 100%;
-            overflow: hidden;
-            background: #02050e;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        * {
+            box-sizing: border-box;
             user-select: none;
         }
-
-        /* BẦU TRỜI SAO TRÀN MÀN HÌNH CỐ ĐỊNH */
-        .starry-sky {
-            position: fixed;
-            top: 0; left: 0;
-            width: 100vw; height: 100vh;
-            background: radial-gradient(ellipse at bottom, #1b2735 0%, #090a0f 100%);
-            z-index: 1;
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #000;
+            overflow: hidden;
+            font-family: "Lucida Console", Monaco, monospace;
         }
-
-        /* MÀN HÌNH INTRO */
-        #intro-screen {
-            position: fixed;
-            top: 0; left: 0;
-            width: 100vw; height: 100vh;
-            background: radial-gradient(circle at center, #1e272e 0%, #02050e 100%);
+        canvas {
+            display: block;
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+        .container {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .menu {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            color: #fff;
+            background: rgba(0, 0, 0, 0.6);
+            padding: 15px;
+            border-radius: 8px;
             z-index: 100;
             display: flex;
             flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            color: #ffeaa7;
-            text-align: center;
-            transition: opacity 0.8s ease, visibility 0.8s ease;
+            gap: 10px;
+            font-size: 14px;
+            backdrop-filter: blur(5px);
         }
-
-        #intro-screen.hidden {
-            opacity: 0;
-            visibility: hidden;
-            pointer-events: none;
-        }
-
-        .intro-title {
-            font-size: 2.8rem;
-            margin-bottom: 15px;
-            text-shadow: 0 0 20px #fdcb6e;
-        }
-
-        .intro-btn {
-            padding: 14px 36px;
-            font-size: 1.2rem;
-            font-weight: bold;
-            color: #2d3436;
-            background: linear-gradient(45deg, #ffeaa7, #fdcb6e);
-            border: none;
-            border-radius: 30px;
+        .menu label {
             cursor: pointer;
-            box-shadow: 0 0 25px rgba(253, 203, 110, 0.6);
-            transition: transform 0.2s, box-shadow 0.2s;
-        }
-
-        .intro-btn:hover {
-            transform: scale(1.08);
-            box-shadow: 0 0 35px rgba(253, 203, 110, 0.9);
-        }
-
-        /* MẶT TRĂNG TRÒN OUTRO */
-        #full-moon {
-            position: fixed;
-            top: 15vh;
-            left: 50%;
-            transform: translateX(-50%) scale(0.5);
-            width: 280px;
-            height: 280px;
-            background: radial-gradient(circle at 35% 35%, #ffffff 0%, #fff3a0 50%, #fbc531 100%);
-            border-radius: 50%;
-            box-shadow: 0 0 60px #fff, 0 0 120px #fbc531;
-            z-index: 5;
-            opacity: 0;
-            transition: transform 3s cubic-bezier(0.1, 0.8, 0.2, 1), opacity 2.5s ease;
-        }
-
-        #full-moon.active {
-            opacity: 1;
-            transform: translateX(-50%) scale(1);
-        }
-
-        /* KHU VỰC CẢNH VẬT MẶT TRĂNG - KHÔNG CÓ NỀN VUÔNG */
-        #moon-world {
-            position: fixed;
-            top: 0; left: 0;
-            width: 100vw; height: 100vh;
-            z-index: 10;
-            transition: opacity 2s ease;
-        }
-
-        #moon-world.fade-out {
-            opacity: 0;
-            pointer-events: none;
-        }
-
-        /* MẢNH ĐẤT MẶT TRĂNG (SỬ DỤNG DẠNG SVG) */
-        #moon-ground {
-            position: absolute;
-            bottom: 0; left: 0;
-            width: 100vw; height: 180px;
-            z-index: 10;
-        }
-
-        #moon-ground.ready-to-click {
-            cursor: pointer;
-            filter: drop-shadow(0 0 20px #fff3a0);
-            animation: pulseGround 1.5s infinite alternate;
-        }
-
-        @keyframes pulseGround {
-            0% { filter: drop-shadow(0 0 15px #fdcb6e); }
-            100% { filter: drop-shadow(0 0 30px #fff3a0); }
-        }
-
-        /* MÀU ĐẤT SÁNG LÊN KHI CHỌN */
-        #moon-ground path.ground-layer1 {
-            fill: #2c3e50;
-            transition: fill 1.2s ease;
-        }
-        #moon-ground path.ground-layer2 {
-            fill: #1e272e;
-            transition: fill 1.2s ease;
-        }
-
-        #moon-ground.brightened path.ground-layer1 {
-            fill: #fff3a0 !important;
-        }
-        #moon-ground.brightened path.ground-layer2 {
-            fill: #fbc531 !important;
-        }
-
-        #moon-ground.brightened {
-            filter: drop-shadow(0 0 50px #fbc531) brightness(1.3) !important;
-        }
-
-        /* DÒNG HƯỚNG DẪN BẤM CẤT CÁNH */
-        #ground-hint {
-            position: absolute;
-            bottom: 190px;
-            left: 50%;
-            transform: translateX(-50%);
-            color: #fff3a0;
-            font-size: 1.2rem;
-            font-weight: bold;
-            text-shadow: 0 0 12px #fbc531;
-            z-index: 25;
-            opacity: 0;
-            pointer-events: none;
-            transition: opacity 1s ease;
-            animation: bounceHint 1.5s infinite alternate;
-        }
-
-        @keyframes bounceHint {
-            0% { transform: translate(-50%, 0); }
-            100% { transform: translate(-50%, -10px); }
-        }
-
-        #ground-hint.show {
-            opacity: 1;
-        }
-
-        /* LỒNG ĐÈN BAY */
-        #lantern-container {
-            position: absolute;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
-            z-index: 20;
-            pointer-events: none;
-        }
-
-        .floating-lantern {
-            position: absolute;
-            width: 65px; height: 95px;
-            cursor: pointer;
-            pointer-events: auto;
-            animation: floatUp 12s linear forwards, sway 3s ease-in-out infinite alternate;
-            filter: drop-shadow(0 0 15px #ff7675);
-        }
-
-        .floating-lantern.fly-away {
-            transform: translateY(-120vh) !important;
-            opacity: 0;
-            transition: transform 3s ease-in, opacity 2s ease-in;
-        }
-
-        @keyframes floatUp {
-            0% { transform: translateY(110vh); }
-            100% { transform: translateY(-20vh); }
-        }
-
-        @keyframes sway {
-            0% { margin-left: -15px; }
-            100% { margin-left: 15px; }
-        }
-
-        /* POPUP LỜI CHÚC */
-        #wish-modal {
-            position: fixed;
-            top: 0; left: 0;
-            width: 100vw; height: 100vh;
-            background: rgba(0, 0, 0, 0.7);
-            z-index: 200;
             display: flex;
-            justify-content: center;
             align-items: center;
-            opacity: 0;
-            visibility: hidden;
-            transition: opacity 0.4s ease, visibility 0.4s ease;
+            gap: 8px;
         }
-
-        #wish-modal.active {
-            opacity: 1;
-            visibility: visible;
+        .menu select {
+            background: #222;
+            color: #fff;
+            border: 1px solid #444;
+            padding: 5px;
+            border-radius: 4px;
         }
-
-        .scroll-card {
-            width: 320px;
-            background: #fff8e7;
-            border: 4px solid #d63031;
-            padding: 25px 20px;
-            border-radius: 12px;
-            box-shadow: 0 0 30px rgba(255, 118, 117, 0.8);
+        .help-text {
+            position: absolute;
+            bottom: 20px;
+            width: 100%;
             text-align: center;
-            transform: scale(0.7);
-            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        }
-
-        #wish-modal.active .scroll-card {
-            transform: scale(1);
-        }
-
-        .scroll-title {
-            color: #d63031;
-            font-size: 1.4rem;
-            margin-bottom: 12px;
-            font-weight: bold;
-        }
-
-        .scroll-text {
-            color: #2d3436;
-            font-size: 1.1rem;
-            line-height: 1.6;
-            margin-bottom: 20px;
-        }
-
-        .close-btn {
-            padding: 8px 24px;
-            background: #d63031;
-            color: white;
-            border: none;
-            border-radius: 20px;
-            cursor: pointer;
-            font-weight: bold;
-            box-shadow: 0 4px 10px rgba(214, 48, 49, 0.4);
-        }
-
-        /* CẢNH TRÁI ĐẤT PHÍA DƯỚI (OUTRO) */
-        #earth-world {
-            position: fixed;
-            bottom: 0; left: 0;
-            width: 100vw; height: 100vh;
-            z-index: 4;
-            opacity: 0;
-            transition: opacity 2.5s ease;
+            color: rgba(255, 255, 255, 0.4);
+            font-size: 12px;
             pointer-events: none;
-        }
-
-        #earth-world.active {
-            opacity: 1;
-        }
-
-        .earth-ground {
-            position: absolute;
-            bottom: 0; left: 0;
-            width: 100vw; height: 180px;
-            background: linear-gradient(to top, #02050e 70%, transparent 100%);
-        }
-
-        .couple-silhouette {
-            position: absolute;
-            bottom: 25px; left: 50%;
-            transform: translateX(-50%);
-            z-index: 6;
-        }
-
-        #fireworks-canvas {
-            position: fixed;
-            top: 0; left: 0;
-            width: 100vw; height: 100vh;
-            z-index: 15;
-            pointer-events: none;
-        }
-
-        /* HẰNG NGA */
-        .hang-nga-container {
-            position: absolute;
-            top: 18%; right: 15%;
-            z-index: 12;
-            animation: floatGently 4s ease-in-out infinite alternate;
-        }
-
-        @keyframes floatGently {
-            0% { transform: translateY(0); }
-            100% { transform: translateY(-18px); }
-        }
-
-        /* CÂY ĐA */
-        .banyan-tree {
-            position: absolute;
-            bottom: 0; right: -20px;
-            width: 480px; height: 520px;
-            z-index: 11;
-            pointer-events: none;
-        }
-
-        /* THỎ NGỌC */
-        .rabbit-gem {
-            position: absolute;
-            bottom: 40px; left: 18%;
-            z-index: 11;
-            pointer-events: none;
+            z-index: 10;
         }
     </style>
 </head>
 <body>
 
-    <!-- BẦU TRỜI SAO TRÀN MÀN HÌNH -->
-    <div class="starry-sky"></div>
-
-    <!-- MÀN HÌNH INTRO -->
-    <div id="intro-screen">
-        <h1 class="intro-title">🌕 Trung Thu Yêu Thương 🌕</h1>
-        <p style="margin-bottom: 25px; opacity: 0.9;">Hãy thả lòng và chạm vào những chiếc lồng đèn trên cao...</p>
-        <button class="intro-btn" onclick="startExperience()">Bắt Đầu Ngắm Trăng</button>
+    <div class="menu">
+        <label>Chế độ pháo hoa:
+            <select id="shellType">
+                <option value="Random">Ngẫu nhiên</option>
+                <option value="Crysanthemum">Cúc đại đóa</option>
+                <option value="Palm">Cây cọ</option>
+                <option value="Ring">Vòng tròn</option>
+                <option value="Crackle">Nổ lép bép</option>
+            </select>
+        </label>
+        <label>Quy mô:
+            <select id="shellSize">
+                <option value="3">Bình thường</option>
+                <option value="4">Lớn</option>
+                <option value="5">Rất lớn</option>
+            </select>
+        </label>
+        <label><input type="checkbox" id="autoLaunch" checked> Tự động bắn</label>
+        <label><input type="checkbox" id="soundToggle"> Bật âm thanh</label>
     </div>
 
-    <!-- MẶT TRĂNG TRÒN OUTRO KHI CẤT CÁNH -->
-    <div id="full-moon"></div>
+    <div class="help-text">Nhấp hoặc chạm vào màn hình để bắn pháo hoa thủ công</div>
 
-    <!-- KHU VỰC CẢNH VẬT MẶT TRĂNG -->
-    <div id="moon-world">
-        <div id="ground-hint">✨ Hãy chạm vào mặt đất để cất cánh nhìn về Trái Đất ✨</div>
-
-        <!-- MẢNH ĐẤT MẶT TRĂNG -->
-        <svg id="moon-ground" viewBox="0 0 1440 180" preserveAspectRatio="none" onclick="onGroundClick()">
-            <path class="ground-layer1" d="M0,60 Q360,110 720,50 Q1080,10 1440,60 L1440,180 L0,180 Z"/>
-            <path class="ground-layer2" d="M0,80 Q400,40 800,90 Q1200,140 1440,70 L1440,180 L0,180 Z" opacity="0.95"/>
-        </svg>
-
-        <!-- HẰNG NGA -->
-        <div class="hang-nga-container">
-            <svg width="160" height="200" viewBox="0 0 160 200">
-                <path d="M 30,120 Q 10,60 80,30 Q 150,20 130,110 Q 110,170 50,160" fill="none" stroke="#ff7675" stroke-width="4" stroke-linecap="round" opacity="0.85"/>
-                <path d="M 70,80 L 35,185 Q 80,200 125,180 L 95,80 Z" fill="#fd79a8"/>
-                <path d="M 72,80 L 50,183 Q 80,192 110,180 L 90,80 Z" fill="#ffffff" opacity="0.8"/>
-                <path d="M 60,60 Q 80,50 100,60 L 110,90 Q 80,100 50,90 Z" fill="#ffeaa7"/>
-                <path d="M 50,65 Q 30,85 20,105 Q 35,110 55,90 Z" fill="#fd79a8"/>
-                <path d="M 110,65 Q 130,85 140,105 Q 125,110 105,90 Z" fill="#fd79a8"/>
-                <circle cx="80" cy="40" r="12" fill="#ffeaa7"/>
-                <path d="M 68,38 C 68,22 92,22 92,38 C 92,28 68,28 68,38 Z" fill="#2d3436"/>
-                <circle cx="80" cy="22" r="7" fill="#2d3436"/>
-                <line x1="70" y1="20" x2="92" y2="20" stroke="#fdcb6e" stroke-width="2"/>
-                <circle cx="80" cy="75" r="8" fill="#fff" filter="drop-shadow(0 0 6px #ffeaa7)"/>
-            </svg>
-        </div>
-
-        <!-- CÂY ĐA & CHÚ CUỘI -->
-        <svg class="banyan-tree" viewBox="0 0 500 550">
-            <path d="M 120,220 Q 60,70 210,30 Q 360,-20 480,40 Q 540,140 490,260 Q 430,350 320,300 Z" fill="#0b1a10"/>
-            <path d="M 350,550 C 320,420 280,300 250,220 C 220,150 180,120 160,110 L 190,100 C 220,130 250,180 280,250 C 330,360 370,450 450,550 Z" fill="#2d1500"/>
-            <g transform="translate(210, 400)">
-                <ellipse cx="40" cy="80" rx="25" ry="15" fill="#1e1005"/>
-                <path d="M 25,45 C 20,60 25,80 35,85 L 70,85 C 80,80 80,60 75,45 Z" fill="#5c3a21"/>
-                <circle cx="50" cy="28" r="11" fill="#ffeaa7"/>
-                <line x1="10" y1="32" x2="85" y2="26" stroke="#f1c40f" stroke-width="4" stroke-linecap="round"/>
-            </g>
-        </svg>
-
-        <!-- THỎ NGỌC -->
-        <svg class="rabbit-gem" width="70" height="80" viewBox="0 0 100 110">
-            <ellipse cx="45" cy="78" rx="25" ry="18" fill="#ffffff"/>
-            <circle cx="62" cy="50" r="16" fill="#ffffff"/>
-            <ellipse cx="55" cy="22" rx="5" ry="16" fill="#ffffff" transform="rotate(-10 55 22)"/>
-            <ellipse cx="66" cy="20" rx="5" ry="17" fill="#ffffff" transform="rotate(8 66 20)"/>
-        </svg>
-
-        <div id="lantern-container"></div>
-    </div>
-
-    <!-- CẢNH TRÁI ĐẤT PHÍA DƯỚI -->
-    <div id="earth-world">
-        <div class="earth-ground"></div>
-        <svg class="couple-silhouette" width="180" height="130" viewBox="0 0 180 130">
-            <circle cx="70" cy="40" r="15" fill="#02050e"/>
-            <path d="M 45,130 C 45,75 60,60 80,60 C 85,60 90,75 90,130 Z" fill="#02050e"/>
-            <circle cx="95" cy="48" r="13" fill="#02050e"/>
-            <path d="M 80,130 C 80,82 90,70 110,72 C 120,82 115,98 120,130 Z" fill="#02050e"/>
-        </svg>
-    </div>
-
-    <!-- CANVAS PHÁO HOA -->
-    <canvas id="fireworks-canvas"></canvas>
-
-    <!-- POPUP LỜI CHÚC -->
-    <div id="wish-modal">
-        <div class="scroll-card">
-            <div class="scroll-title">✨ LỜI CHÚC TRUNG THU ✨</div>
-            <div class="scroll-text" id="scrollText">...</div>
-            <button class="close-btn" onclick="closeWishModal()">Xác Nhận 🥮</button>
-        </div>
-    </div>
+    <canvas id="fireworksCanvas"></canvas>
 
     <script>
-        const wishList = [
-            "Chúc bạn một mùa Trung Thu ấm áp, đong đầy hạnh phúc và tràn ngập tiếng cười bên những người thân yêu!",
-            "Nhờ vầng trăng sáng tỏ gửi tới bạn niềm vui, sức khỏe dồi dào và muôn vàn may mắn trong cuộc sống!",
-            "Mọi ước nguyện của bạn dưới ánh trăng Rằm đêm nay sẽ đều trở thành hiện thực. Tròn đầy như trăng Rằm!"
-        ];
+        const canvas = document.getElementById('fireworksCanvas');
+        const ctx = canvas.getContext('2d');
 
-        let lanternClicks = 0;
-        let spawnInterval = null;
-        let canClickGround = false;
-        let hasZoomed = false;
+        let width = canvas.width = window.innerWidth;
+        let height = canvas.height = window.innerHeight;
 
-        const lanternContainer = document.getElementById('lantern-container');
-        const wishModal = document.getElementById('wish-modal');
-        const scrollText = document.getElementById('scrollText');
-        const moonGround = document.getElementById('moon-ground');
-        const groundHint = document.getElementById('ground-hint');
+        window.addEventListener('resize', () => {
+            width = canvas.width = window.innerWidth;
+            height = canvas.height = window.innerHeight;
+        });
 
-        function startExperience() {
-            document.getElementById('intro-screen').classList.add('hidden');
-            lanternClicks = 0;
-            canClickGround = false;
-            hasZoomed = false;
-            lanternContainer.innerHTML = '';
+        // Audio Context cơ bản cho âm thanh pháo hoa
+        let audioCtx = null;
+        function playSound(type) {
+            if (!document.getElementById('soundToggle').checked) return;
+            if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
             
-            spawnInterval = setInterval(createLantern, 1800);
-            createLantern(); createLantern();
-        }
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
 
-        function createLantern() {
-            if (lanternClicks >= 3) return;
-
-            const lantern = document.createElement('div');
-            lantern.className = 'floating-lantern';
-            lantern.style.left = Math.random() * 80 + 10 + 'vw';
-            lantern.style.animationDuration = (Math.random() * 4 + 10) + 's';
-
-            lantern.innerHTML = `
-                <svg width="65" height="95" viewBox="0 0 65 95">
-                    <line x1="32.5" y1="0" x2="32.5" y2="15" stroke="#fdcb6e" stroke-width="2"/>
-                    <rect x="20" y="12" width="25" height="6" fill="#d63031" rx="2"/>
-                    <path d="M 12,18 C 5,40 5,60 12,80 L 53,80 C 60,60 60,40 53,18 Z" fill="#e74c3c" stroke="#f1c40f" stroke-width="2"/>
-                    <path d="M 22,18 C 18,40 18,60 22,80 M 43,18 C 47,40 47,60 43,80" stroke="#f1c40f" stroke-width="1.5" fill="none"/>
-                    <circle cx="32.5" cy="50" r="10" fill="#ffeaa7" filter="drop-shadow(0 0 8px #fff)"/>
-                    <rect x="20" y="80" width="25" height="5" fill="#d63031" rx="1"/>
-                    <line x1="32.5" y1="85" x2="32.5" y2="95" stroke="#fdcb6e" stroke-width="3"/>
-                </svg>
-            `;
-
-            lantern.addEventListener('click', (e) => {
-                e.stopPropagation();
-                if (lanternClicks >= 3) return;
-
-                lanternClicks++;
-                showWish(wishList[lanternClicks - 1]);
-                lantern.remove();
-
-                if (lanternClicks === 3) {
-                    clearInterval(spawnInterval);
-                    const remainingLanterns = document.querySelectorAll('.floating-lantern');
-                    remainingLanterns.forEach(l => l.classList.add('fly-away'));
-                }
-            });
-
-            lanternContainer.appendChild(lantern);
-
-            setTimeout(() => {
-                if (lantern.parentNode) lantern.remove();
-            }, 14000);
-        }
-
-        function showWish(text) {
-            scrollText.innerText = text;
-            wishModal.classList.add('active');
-        }
-
-        function closeWishModal() {
-            wishModal.classList.remove('active');
-
-            if (lanternClicks === 3 && !canClickGround) {
-                canClickGround = true;
-                moonGround.classList.add('ready-to-click');
-                groundHint.classList.add('show');
+            if (type === 'launch') {
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(150, audioCtx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(400, audioCtx.currentTime + 0.5);
+                gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+                gain.gain.linearRampToValueAtTime(0.01, audioCtx.currentTime + 0.5);
+                osc.start();
+                osc.stop(audioCtx.currentTime + 0.5);
+            } else if (type === 'burst') {
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(80, audioCtx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(20, audioCtx.currentTime + 0.8);
+                gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
+                gain.gain.linearRampToValueAtTime(0.01, audioCtx.currentTime + 0.8);
+                osc.start();
+                osc.stop(audioCtx.currentTime + 0.8);
             }
         }
 
-        function onGroundClick() {
-            if (!canClickGround || hasZoomed) return;
-            hasZoomed = true;
-
-            // Đổi màu mảnh đất sang màu vàng trăng Rằm
-            moonGround.classList.remove('ready-to-click');
-            moonGround.classList.add('brightened');
-            groundHint.classList.remove('show');
-
-            setTimeout(() => {
-                triggerTakeoff();
-            }, 800);
-        }
-
-        function triggerTakeoff() {
-            const moonWorld = document.getElementById('moon-world');
-            const fullMoon = document.getElementById('full-moon');
-            const earthWorld = document.getElementById('earth-world');
-
-            // Cảnh vật mờ dần mượt mà, hoàn toàn tràn màn hình
-            moonWorld.classList.add('fade-out');
-
-            // Mặt trăng tròn dần hiện ra giữa bầu trời sao
-            setTimeout(() => {
-                fullMoon.classList.add('active');
-            }, 600);
-
-            // Cảnh Trái Đất bên dưới hiện ra
-            setTimeout(() => {
-                earthWorld.classList.add('active');
-            }, 1600);
-
-            // Bắt đầu pháo hoa
-            setTimeout(() => {
-                startFireworksShow();
-            }, 2800);
-        }
-
-        /* PHÁO HOA */
-        const fCanvas = document.getElementById('fireworks-canvas');
-        const fCtx = fCanvas.getContext('2d');
-        let fireworks = [];
-        let particles = [];
-
-        function resizeCanvas() {
-            fCanvas.width = window.innerWidth;
-            fCanvas.height = window.innerHeight;
-        }
-        window.addEventListener('resize', resizeCanvas);
-        resizeCanvas();
-
-        class FireworkRocket {
-            constructor(startX, targetX, targetY, color) {
-                this.x = startX;
-                this.y = fCanvas.height;
-                this.targetX = targetX;
+        class Shell {
+            constructor(x, targetY, color, type, size) {
+                this.x = x;
+                this.y = height;
                 this.targetY = targetY;
+                this.speed = 12;
+                this.angle = -Math.PI / 2 + (Math.random() - 0.5) * 0.1;
                 this.color = color;
-                this.speed = 9;
-                this.angle = Math.atan2(targetY - fCanvas.height, targetX - startX);
-                this.vx = Math.cos(this.angle) * this.speed;
-                this.vy = Math.sin(this.angle) * this.speed;
+                this.type = type;
+                this.size = size;
                 this.trail = [];
+                playSound('launch');
             }
 
             update() {
-                this.trail.push({x: this.x, y: this.y});
-                if (this.trail.length > 6) this.trail.shift();
+                this.trail.push({ x: this.x, y: this.y });
+                if (this.trail.length > 5) this.trail.shift();
 
-                this.x += this.vx;
-                this.y += this.vy;
+                const vx = Math.cos(this.angle) * this.speed;
+                const vy = Math.sin(this.angle) * this.speed;
+                this.x += vx;
+                this.y += vy;
 
                 if (this.y <= this.targetY) {
-                    createExplosion(this.x, this.y, this.color);
-                    return false;
+                    playSound('burst');
+                    return true; // Đến điểm nổ
                 }
-                return true;
+                return false;
             }
 
             draw() {
-                fCtx.beginPath();
-                fCtx.moveTo(this.x, this.y);
-                for (let p of this.trail) {
-                    fCtx.lineTo(p.x, p.y);
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, 3, 0, Math.PI * 2);
+                ctx.fillStyle = this.color;
+                ctx.fill();
+
+                // Vẽ đuôi pháo bay lên
+                for (let i = 0; i < this.trail.length; i++) {
+                    const point = this.trail[i];
+                    ctx.beginPath();
+                    ctx.arc(point.x, point.y, 1.5, 0, Math.PI * 2);
+                    ctx.fillStyle = `rgba(255, 255, 255, ${i / this.trail.length * 0.5})`;
+                    ctx.fill();
                 }
-                fCtx.strokeStyle = '#ffeaa7';
-                fCtx.lineWidth = 2.5;
-                fCtx.stroke();
             }
         }
 
         class Particle {
-            constructor(x, y, color) {
+            constructor(x, y, color, type) {
                 this.x = x;
                 this.y = y;
                 this.color = color;
+                this.type = type;
+                
                 const angle = Math.random() * Math.PI * 2;
-                const speed = Math.random() * 6 + 1.5;
+                const speed = Math.random() * 6 + 2;
                 this.vx = Math.cos(angle) * speed;
                 this.vy = Math.sin(angle) * speed;
-                this.friction = 0.95;
-                this.gravity = 0.08;
                 this.alpha = 1;
                 this.decay = Math.random() * 0.015 + 0.01;
-                this.prevX = x;
-                this.prevY = y;
+                this.gravity = 0.15;
+                this.sparkle = Math.random() < 0.3;
             }
 
             update() {
-                this.prevX = this.x;
-                this.prevY = this.y;
-
-                this.vx *= this.friction;
-                this.vy *= this.friction;
+                this.vx *= 0.96;
+                this.vy *= 0.96;
                 this.vy += this.gravity;
-
                 this.x += this.vx;
                 this.y += this.vy;
                 this.alpha -= this.decay;
-
-                return this.alpha > 0;
             }
 
             draw() {
-                fCtx.beginPath();
-                fCtx.moveTo(this.prevX, this.prevY);
-                fCtx.lineTo(this.x, this.y);
-                fCtx.strokeStyle = this.color;
-                fCtx.globalAlpha = Math.max(0, this.alpha);
-                fCtx.lineWidth = 2;
-                fCtx.stroke();
+                ctx.save();
+                ctx.globalAlpha = Math.max(0, this.alpha);
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.sparkle && Math.random() < 0.5 ? 2.5 : 1.5, 0, Math.PI * 2);
+                ctx.fillStyle = this.color;
+                ctx.fill();
+                ctx.restore();
             }
         }
 
-        function createExplosion(x, y, color) {
-            const count = 80;
-            for (let i = 0; i < count; i++) {
-                particles.push(new Particle(x, y, color));
-            }
-        }
+        let shells = [];
+        let particles = [];
 
-        function startFireworksShow() {
-            const colors = ['#ff7675', '#fdcb6e', '#55efc4', '#74b9ff', '#a29bfe', '#fd79a8'];
+        function createShell(startX, startY, targetX, targetY) {
+            const colors = ['#ff3366', '#33ccff', '#ffcc00', '#66ff66', '#cc33ff', '#ffffff', '#ff9900'];
+            const color = colors[Math.floor(Math.random() * colors.length)];
             
-            setInterval(() => {
-                const startX = Math.random() * (fCanvas.width - 200) + 100;
-                const targetX = startX + (Math.random() - 0.5) * 150;
-                const targetY = Math.random() * (fCanvas.height * 0.45) + 80;
-                const color = colors[Math.floor(Math.random() * colors.length)];
+            let typeSelect = document.getElementById('shellType').value;
+            let types = ['Crysanthemum', 'Palm', 'Ring', 'Crackle'];
+            let type = typeSelect === 'Random' ? types[Math.floor(Math.random() * types.length)] : typeSelect;
+            
+            let size = parseInt(document.getElementById('shellSize').value);
 
-                fireworks.push(new FireworkRocket(startX, targetX, targetY, color));
-            }, 800);
-
-            animateFireworks();
+            shells.push(new Shell(startX, targetY, color, type, size));
         }
 
-        function animateFireworks() {
-            fCtx.globalCompositeOperation = 'destination-out';
-            fCtx.fillStyle = 'rgba(0, 0, 0, 0.18)';
-            fCtx.fillRect(0, 0, fCanvas.width, fCanvas.height);
-            fCtx.globalCompositeOperation = 'lighter';
-
-            fireworks = fireworks.filter(fw => {
-                fw.draw();
-                return fw.update();
-            });
-
-            particles = particles.filter(p => {
-                p.draw();
-                return p.update();
-            });
-
-            requestAnimationFrame(animateFireworks);
+        function explode(x, y, color, type, size) {
+            let count = size * 30;
+            for (let i = 0; i < count; i++) {
+                particles.push(new Particle(x, y, color, type));
+            }
         }
+
+        // Tự động bắn pháo hoa định kỳ
+        let lastAutoLaunch = 0;
+        function loop(timestamp) {
+            // Hiệu ứng mờ dần tạo vệt sáng (Motion Blur)
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.2)';
+            ctx.fillRect(0, 0, width, height);
+
+            if (document.getElementById('autoLaunch').checked && timestamp - lastAutoLaunch > 800) {
+                createShell(Math.random() * width, 0, Math.random() * (width - 200) + 100, Math.random() * (height * 0.5) + 50);
+                lastAutoLaunch = timestamp;
+            }
+
+            for (let i = shells.length - 1; i >= 0; i--) {
+                shells[i].draw();
+                if (shells[i].update()) {
+                    explode(shells[i].x, shells[i].y, shells[i].color, shells[i].type, shells[i].size);
+                    shells.splice(i, 1);
+                }
+            }
+
+            for (let i = particles.length - 1; i >= 0; i--) {
+                particles[i].update();
+                particles[i].draw();
+                if (particles[i].alpha <= 0) {
+                    particles.splice(i, 1);
+                }
+            }
+
+            requestAnimationFrame(loop);
+        }
+
+        // Bắn thủ công bằng cách click/chạm
+        window.addEventListener('click', (e) => {
+            if (e.target.tagName === 'SELECT' || e.target.tagName === 'INPUT' || e.target.tagName === 'LABEL') return;
+            createShell(e.clientX, height, e.clientX, e.clientY);
+        });
+
+        requestAnimationFrame(loop);
     </script>
 </body>
 </html>
