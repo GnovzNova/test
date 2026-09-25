@@ -3,101 +3,81 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pháo Hoa Giống Video</title>
+    <title>Pháo Hoa Nghệ Thuật Toàn Màn Hình</title>
     <style>
         * {
             box-sizing: border-box;
-            user-select: none;
         }
         body, html {
             margin: 0;
             padding: 0;
             width: 100%;
             height: 100%;
-            background-color: #000;
             overflow: hidden;
-            font-family: "Lucida Console", Monaco, monospace;
+            background: #000;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            transition: background-color 0.1s ease;
         }
         canvas {
             display: block;
-            position: absolute;
-            top: 0;
-            left: 0;
             width: 100%;
             height: 100%;
         }
-        .container {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-        .menu {
+        .menu-container {
             position: absolute;
             top: 20px;
-            left: 20px;
-            color: #fff;
-            background: rgba(0, 0, 0, 0.6);
-            padding: 15px;
-            border-radius: 8px;
+            right: 20px;
             z-index: 100;
+            opacity: 0.8;
+            transition: opacity 0.3s;
+        }
+        .menu-container:hover {
+            opacity: 1;
+        }
+        .menu {
             display: flex;
             flex-direction: column;
-            gap: 10px;
-            font-size: 14px;
+            background: rgba(0, 0, 0, 0.6);
+            padding: 10px 15px;
+            border-radius: 8px;
+            color: #fff;
             backdrop-filter: blur(5px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
         }
         .menu label {
+            margin: 5px 0;
             cursor: pointer;
+            font-size: 14px;
             display: flex;
             align-items: center;
-            gap: 8px;
+            justify-content: space-between;
         }
-        .menu select {
-            background: #222;
-            color: #fff;
-            border: 1px solid #444;
-            padding: 5px;
-            border-radius: 4px;
+        .menu input {
+            margin-left: 10px;
         }
-        .help-text {
+        .instructions {
             position: absolute;
             bottom: 20px;
-            width: 100%;
-            text-align: center;
-            color: rgba(255, 255, 255, 0.4);
-            font-size: 12px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 13px;
             pointer-events: none;
-            z-index: 10;
+            text-align: center;
+            letter-spacing: 1px;
         }
     </style>
 </head>
 <body>
 
-    <div class="menu">
-        <label>Chế độ pháo hoa:
-            <select id="shellType">
-                <option value="Random">Ngẫu nhiên</option>
-                <option value="Crysanthemum">Cúc đại đóa</option>
-                <option value="Palm">Cây cọ</option>
-                <option value="Ring">Vòng tròn</option>
-                <option value="Crackle">Nổ lép bép</option>
-            </select>
-        </label>
-        <label>Quy mô:
-            <select id="shellSize">
-                <option value="3">Bình thường</option>
-                <option value="4">Lớn</option>
-                <option value="5">Rất lớn</option>
-            </select>
-        </label>
-        <label><input type="checkbox" id="autoLaunch" checked> Tự động bắn</label>
-        <label><input type="checkbox" id="soundToggle"> Bật âm thanh</label>
-    </div>
+    <div class="instructions">Chạm hoặc click chuột bất kỳ đâu để bắn pháo hoa</div>
 
-    <div class="help-text">Nhấp hoặc chạm vào màn hình để bắn pháo hoa thủ công</div>
+    <div class="menu-container">
+        <div class="menu">
+            <label>Tự động bắn <input type="checkbox" id="auto-launch" checked></label>
+            <label>Hiệu ứng chớp sáng <input type="checkbox" id="flash-effect" checked></label>
+        </div>
+    </div>
 
     <canvas id="fireworksCanvas"></canvas>
 
@@ -113,181 +93,234 @@
             height = canvas.height = window.innerHeight;
         });
 
-        // Audio Context cơ bản cho âm thanh pháo hoa
-        let audioCtx = null;
-        function playSound(type) {
-            if (!document.getElementById('soundToggle').checked) return;
-            if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-            
-            const osc = audioCtx.createOscillator();
-            const gain = audioCtx.createGain();
-            osc.connect(gain);
-            gain.connect(audioCtx.destination);
+        // Trạng thái chung
+        const config = {
+            autoLaunch: true,
+            flashEffect: true
+        };
 
-            if (type === 'launch') {
-                osc.type = 'sine';
-                osc.frequency.setValueAtTime(150, audioCtx.currentTime);
-                osc.frequency.exponentialRampToValueAtTime(400, audioCtx.currentTime + 0.5);
-                gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
-                gain.gain.linearRampToValueAtTime(0.01, audioCtx.currentTime + 0.5);
-                osc.start();
-                osc.stop(audioCtx.currentTime + 0.5);
-            } else if (type === 'burst') {
-                osc.type = 'triangle';
-                osc.frequency.setValueAtTime(80, audioCtx.currentTime);
-                osc.frequency.exponentialRampToValueAtTime(20, audioCtx.currentTime + 0.8);
-                gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
-                gain.gain.linearRampToValueAtTime(0.01, audioCtx.currentTime + 0.8);
-                osc.start();
-                osc.stop(audioCtx.currentTime + 0.8);
-            }
+        document.getElementById('auto-launch').addEventListener('change', (e) => {
+            config.autoLaunch = e.target.checked;
+        });
+        document.getElementById('flash-effect').addEventListener('change', (e) => {
+            config.flashEffect = e.target.checked;
+        });
+
+        // Quản lý hiệu ứng chớp sáng bầu trời
+        let skyFlashIntensity = 0;
+        function triggerSkyFlash(color) {
+            if (!config.flashEffect) return;
+            skyFlashIntensity = 0.15; // Độ sáng lóe lên
+            // Chuyển đổi màu sắc sang rgba mờ
+            document.body.style.backgroundColor = color;
+            setTimeout(() => {
+                document.body.style.backgroundColor = '#000000';
+            }, 50);
         }
 
-        class Shell {
-            constructor(x, targetY, color, type, size) {
-                this.x = x;
-                this.y = height;
-                this.targetY = targetY;
-                this.speed = 12;
-                this.angle = -Math.PI / 2 + (Math.random() - 0.5) * 0.1;
-                this.color = color;
-                this.type = type;
-                this.size = size;
-                this.trail = [];
-                playSound('launch');
-            }
-
-            update() {
-                this.trail.push({ x: this.x, y: this.y });
-                if (this.trail.length > 5) this.trail.shift();
-
-                const vx = Math.cos(this.angle) * this.speed;
-                const vy = Math.sin(this.angle) * this.speed;
-                this.x += vx;
-                this.y += vy;
-
-                if (this.y <= this.targetY) {
-                    playSound('burst');
-                    return true; // Đến điểm nổ
-                }
-                return false;
-            }
-
-            draw() {
-                ctx.beginPath();
-                ctx.arc(this.x, this.y, 3, 0, Math.PI * 2);
-                ctx.fillStyle = this.color;
-                ctx.fill();
-
-                // Vẽ đuôi pháo bay lên
-                for (let i = 0; i < this.trail.length; i++) {
-                    const point = this.trail[i];
-                    ctx.beginPath();
-                    ctx.arc(point.x, point.y, 1.5, 0, Math.PI * 2);
-                    ctx.fillStyle = `rgba(255, 255, 255, ${i / this.trail.length * 0.5})`;
-                    ctx.fill();
-                }
-            }
-        }
+        // Mảng màu sắc pháo hoa
+        const colors = [
+            '#ff3333', '#33ff33', '#3366ff', '#ffff33', '#ff33ff', '#33ffff', 
+            '#ff9933', '#ff99ff', '#99ff33', '#ffffff', '#ff69b4', '#00ffcc'
+        ];
 
         class Particle {
-            constructor(x, y, color, type) {
+            constructor(x, y, color, angle, speed, friction, gravity, size, alphaDecrease, shape = 'normal') {
                 this.x = x;
                 this.y = y;
                 this.color = color;
-                this.type = type;
-                
-                const angle = Math.random() * Math.PI * 2;
-                const speed = Math.random() * 6 + 2;
+                this.angle = angle;
+                this.speed = speed;
+                this.friction = friction;
+                this.gravity = gravity;
+                this.size = size;
+                this.alpha = 1;
+                this.alphaDecrease = alphaDecrease;
+                this.shape = shape;
                 this.vx = Math.cos(angle) * speed;
                 this.vy = Math.sin(angle) * speed;
-                this.alpha = 1;
-                this.decay = Math.random() * 0.015 + 0.01;
-                this.gravity = 0.15;
-                this.sparkle = Math.random() < 0.3;
             }
 
             update() {
-                this.vx *= 0.96;
-                this.vy *= 0.96;
+                this.vx *= this.friction;
+                this.vy *= this.friction;
                 this.vy += this.gravity;
                 this.x += this.vx;
                 this.y += this.vy;
-                this.alpha -= this.decay;
+                this.alpha -= this.alphaDecrease;
             }
 
             draw() {
                 ctx.save();
                 ctx.globalAlpha = Math.max(0, this.alpha);
-                ctx.beginPath();
-                ctx.arc(this.x, this.y, this.sparkle && Math.random() < 0.5 ? 2.5 : 1.5, 0, Math.PI * 2);
                 ctx.fillStyle = this.color;
-                ctx.fill();
+                ctx.strokeStyle = this.color;
+
+                if (this.shape === 'heart') {
+                    // Vẽ hình trái tim
+                    ctx.beginPath();
+                    let t = this.size;
+                    ctx.moveTo(this.x, this.y);
+                    ctx.bezierCurveTo(this.x - t, this.y - t, this.x - t * 2, this.y + t / 2, this.x, this.y + t * 1.5);
+                    ctx.bezierCurveTo(this.x + t * 2, this.y + t / 2, this.x + t, this.y - t, this.x, this.y);
+                    ctx.fill();
+                } else {
+                    // Hình tròn tiêu chuẩn
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                    ctx.fill();
+                }
                 ctx.restore();
             }
         }
 
-        let shells = [];
-        let particles = [];
+        class Firework {
+            constructor(startX, startY, targetX, targetY, color) {
+                this.x = startX;
+                this.y = startY;
+                this.startX = startX;
+                this.startY = startY;
+                this.targetX = targetX;
+                this.targetY = targetY;
+                this.color = color;
+                this.distanceToTarget = Math.hypot(targetX - startX, targetY - startY);
+                this.distanceTraveled = 0;
+                this.angle = Math.atan2(targetY - startY, targetX - startX);
+                this.speed = 12;
+                this.acceleration = 1.05;
+                this.particles = [];
+                this.status = 'launching'; // launching, exploded, dead
+            }
 
-        function createShell(startX, startY, targetX, targetY) {
-            const colors = ['#ff3366', '#33ccff', '#ffcc00', '#66ff66', '#cc33ff', '#ffffff', '#ff9900'];
-            const color = colors[Math.floor(Math.random() * colors.length)];
-            
-            let typeSelect = document.getElementById('shellType').value;
-            let types = ['Crysanthemum', 'Palm', 'Ring', 'Crackle'];
-            let type = typeSelect === 'Random' ? types[Math.floor(Math.random() * types.length)] : typeSelect;
-            
-            let size = parseInt(document.getElementById('shellSize').value);
+            update() {
+                if (this.status === 'launching') {
+                    this.speed *= this.acceleration;
+                    let vx = Math.cos(this.angle) * this.speed;
+                    let vy = Math.sin(this.angle) * this.speed;
+                    this.distanceTraveled = Math.hypot(this.x - this.startX, this.y - this.startY);
 
-            shells.push(new Shell(startX, targetY, color, type, size));
-        }
+                    if (this.distanceTraveled >= this.distanceToTarget || this.y <= this.targetY) {
+                        this.explode();
+                        this.status = 'exploded';
+                    } else {
+                        this.x += vx;
+                        this.y += vy;
+                    }
+                } else if (this.status === 'exploded') {
+                    this.particles.forEach((p, index) => {
+                        p.update();
+                        if (p.alpha <= 0) {
+                            this.particles.splice(index, 1);
+                        }
+                    });
+                    if (this.particles.length === 0) {
+                        this.status = 'dead';
+                    }
+                }
+            }
 
-        function explode(x, y, color, type, size) {
-            let count = size * 30;
-            for (let i = 0; i < count; i++) {
-                particles.push(new Particle(x, y, color, type));
+            draw() {
+                if (this.status === 'launching') {
+                    ctx.save();
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, 2.5, 0, Math.PI * 2);
+                    ctx.fillStyle = this.color;
+                    ctx.shadowBlur = 8;
+                    ctx.shadowColor = this.color;
+                    ctx.fill();
+                    ctx.restore();
+                } else if (this.status === 'exploded') {
+                    this.particles.forEach(p => p.draw());
+                }
+            }
+
+            explode() {
+                // Tạo hiệu ứng chớp sáng bầu trời ứng với màu pháo hoa
+                triggerSkyFlash(this.color);
+
+                // Chọn ngẫu nhiên loại hình nổ phong phú
+                const types = ['circle', 'ring', 'heart', 'multi-layer', 'star'];
+                const selectedType = types[Math.floor(Math.random() * types.length)];
+                
+                const particleCount = 120;
+
+                if (selectedType === 'circle') {
+                    for (let i = 0; i < particleCount; i++) {
+                        const angle = (Math.PI * 2 / particleCount) * i;
+                        const speed = Math.random() * 6 + 2;
+                        this.particles.push(new Particle(this.targetX, this.targetY, this.color, angle, speed, 0.95, 0.08, Math.random() * 2 + 1, 0.015));
+                    }
+                } else if (selectedType === 'ring') {
+                    for (let i = 0; i < particleCount; i++) {
+                        const angle = (Math.PI * 2 / particleCount) * i;
+                        const speed = 5; // Tốc độ đều tạo vành khuyên
+                        this.particles.push(new Particle(this.targetX, this.targetY, this.color, angle, speed, 0.96, 0.05, 2, 0.02));
+                    }
+                } else if (selectedType === 'heart') {
+                    for (let i = 0; i < particleCount; i++) {
+                        const angle = Math.random() * Math.PI * 2;
+                        const speed = Math.random() * 4 + 1;
+                        this.particles.push(new Particle(this.targetX, this.targetY, this.color, angle, speed, 0.94, 0.04, 2.5, 0.015, 'heart'));
+                    }
+                } else if (selectedType === 'multi-layer') {
+                    // Nổ 2 lớp màu khác nhau
+                    const secondaryColor = colors[Math.floor(Math.random() * colors.length)];
+                    for (let i = 0; i < particleCount; i++) {
+                        const angle = (Math.PI * 2 / particleCount) * i;
+                        const speed = i % 2 === 0 ? Math.random() * 7 + 3 : Math.random() * 4 + 1;
+                        const col = i % 2 === 0 ? this.color : secondaryColor;
+                        this.particles.push(new Particle(this.targetX, this.targetY, col, angle, speed, 0.95, 0.07, 2, 0.018));
+                    }
+                } else {
+                    // Kiểu mưa sao băng rơi xuống
+                    for (let i = 0; i < particleCount; i++) {
+                        const angle = Math.random() * Math.PI * 2;
+                        const speed = Math.random() * 8 + 1;
+                        this.particles.push(new Particle(this.targetX, this.targetY, this.color, angle, speed, 0.92, 0.15, Math.random() * 2, 0.025));
+                    }
+                }
             }
         }
 
-        // Tự động bắn pháo hoa định kỳ
-        let lastAutoLaunch = 0;
+        let fireworks = [];
+
+        // Thêm pháo hoa tự động
+        let lastLaunchTime = 0;
         function loop(timestamp) {
-            // Hiệu ứng mờ dần tạo vệt sáng (Motion Blur)
+            // Hiệu ứng lưu ảnh chuyển động mờ ảo (motion blur)
             ctx.fillStyle = 'rgba(0, 0, 0, 0.2)';
             ctx.fillRect(0, 0, width, height);
 
-            if (document.getElementById('autoLaunch').checked && timestamp - lastAutoLaunch > 800) {
-                createShell(Math.random() * width, 0, Math.random() * (width - 200) + 100, Math.random() * (height * 0.5) + 50);
-                lastAutoLaunch = timestamp;
+            if (config.autoLaunch && timestamp - lastLaunchTime > 600) {
+                let startX = Math.random() * width;
+                let targetX = Math.random() * (width - 200) + 100;
+                let targetY = Math.random() * (height * 0.5) + 50;
+                let color = colors[Math.floor(Math.random() * colors.length)];
+                fireworks.push(new Firework(startX, height, targetX, targetY, color));
+                lastLaunchTime = timestamp;
             }
 
-            for (let i = shells.length - 1; i >= 0; i--) {
-                shells[i].draw();
-                if (shells[i].update()) {
-                    explode(shells[i].x, shells[i].y, shells[i].color, shells[i].type, shells[i].size);
-                    shells.splice(i, 1);
+            fireworks.forEach((fw, index) => {
+                fw.update();
+                fw.draw();
+                if (fw.status === 'dead') {
+                    fireworks.splice(index, 1);
                 }
-            }
-
-            for (let i = particles.length - 1; i >= 0; i--) {
-                particles[i].update();
-                particles[i].draw();
-                if (particles[i].alpha <= 0) {
-                    particles.splice(i, 1);
-                }
-            }
+            });
 
             requestAnimationFrame(loop);
         }
 
-        // Bắn thủ công bằng cách click/chạm
-        window.addEventListener('click', (e) => {
-            if (e.target.tagName === 'SELECT' || e.target.tagName === 'INPUT' || e.target.tagName === 'LABEL') return;
-            createShell(e.clientX, height, e.clientX, e.clientY);
-        });
-
         requestAnimationFrame(loop);
+
+        // Click hoặc chạm màn hình để bắn pháo hoa thủ công tại vị trí bấm
+        window.addEventListener('click', (e) => {
+            let startX = width / 2;
+            let targetX = e.clientX;
+            let targetY = e.clientY;
+            let color = colors[Math.floor(Math.random() * colors.length)];
+            fireworks.push(new Firework(startX, height, targetX, targetY, color));
+        });
     </script>
 </body>
 </html>
