@@ -1,326 +1,181 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pháo Hoa Nghệ Thuật Toàn Màn Hình</title>
-    <style>
-        * {
-            box-sizing: border-box;
-        }
-        body, html {
-            margin: 0;
-            padding: 0;
-            width: 100%;
-            height: 100%;
-            overflow: hidden;
-            background: #000;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            transition: background-color 0.1s ease;
-        }
-        canvas {
-            display: block;
-            width: 100%;
-            height: 100%;
-        }
-        .menu-container {
-            position: absolute;
-            top: 20px;
-            right: 20px;
-            z-index: 100;
-            opacity: 0.8;
-            transition: opacity 0.3s;
-        }
-        .menu-container:hover {
-            opacity: 1;
-        }
-        .menu {
-            display: flex;
-            flex-direction: column;
-            background: rgba(0, 0, 0, 0.6);
-            padding: 10px 15px;
-            border-radius: 8px;
-            color: #fff;
-            backdrop-filter: blur(5px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-        }
-        .menu label {
-            margin: 5px 0;
-            cursor: pointer;
-            font-size: 14px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
-        .menu input {
-            margin-left: 10px;
-        }
-        .instructions {
-            position: absolute;
-            bottom: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            color: rgba(255, 255, 255, 0.5);
-            font-size: 13px;
-            pointer-events: none;
-            text-align: center;
-            letter-spacing: 1px;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pháo Hoa Rực Rỡ</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+    html, body {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100%;
+      background-color: #000;
+      overflow: hidden;
+    }
+    canvas {
+      display: block;
+      width: 100%;
+      height: 100%;
+    }
+  </style>
 </head>
 <body>
+  <canvas id="canvas"></canvas>
 
-    <div class="instructions">Chạm hoặc click chuột bất kỳ đâu để bắn pháo hoa</div>
+  <script>
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
 
-    <div class="menu-container">
-        <div class="menu">
-            <label>Tự động bắn <input type="checkbox" id="auto-launch" checked></label>
-            <label>Hiệu ứng chớp sáng <input type="checkbox" id="flash-effect" checked></label>
-        </div>
-    </div>
+    function resize() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    }
+    window.addEventListener('resize', resize);
+    resize();
 
-    <canvas id="fireworksCanvas"></canvas>
+    const shells = [];
+    const particles = [];
 
-    <script>
-        const canvas = document.getElementById('fireworksCanvas');
-        const ctx = canvas.getContext('2d');
+    // Bảng màu rực rỡ rực sáng
+    const colors = [
+      '#ff0055', '#ff5000', '#ffcc00', '#00ff66', 
+      '#00ffff', '#0077ff', '#a000ff', '#ff00cc', '#ffffff'
+    ];
 
-        let width = canvas.width = window.innerWidth;
-        let height = canvas.height = window.innerHeight;
+    // Hạt pháo hoa sau khi nổ
+    class Particle {
+      constructor(x, y, color, angle, speed) {
+        this.x = x;
+        this.y = y;
+        this.color = color;
+        
+        // Tính toán hướng bay theo góc tròn
+        this.vx = Math.cos(angle) * speed;
+        this.vy = Math.sin(angle) * speed;
+        
+        this.alpha = 1;
+        // Tốc độ mờ dần ngẫu nhiên cho hạt
+        this.decay = Math.random() * 0.012 + 0.008; 
+        this.gravity = 0.06;   // Trọng lực kéo hạt rơi xuống nhẹ nhàng
+        this.friction = 0.96;  // Sức cản không khí giúp hạt xòe rộng ra
+      }
 
-        window.addEventListener('resize', () => {
-            width = canvas.width = window.innerWidth;
-            height = canvas.height = window.innerHeight;
-        });
+      update() {
+        this.vx *= this.friction;
+        this.vy *= this.friction;
+        this.vy += this.gravity;
+        this.x += this.vx;
+        this.y += this.vy;
+        this.alpha -= this.decay;
+      }
 
-        // Trạng thái chung
-        const config = {
-            autoLaunch: true,
-            flashEffect: true
-        };
+      draw() {
+        ctx.save();
+        ctx.globalAlpha = Math.max(0, this.alpha);
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, 2, 0, Math.PI * 2);
+        ctx.fillStyle = this.color;
+        // Hiệu ứng phát sáng hạt
+        ctx.shadowBlur = 6;
+        ctx.shadowColor = this.color;
+        ctx.fill();
+        ctx.restore();
+      }
+    }
 
-        document.getElementById('auto-launch').addEventListener('change', (e) => {
-            config.autoLaunch = e.target.checked;
-        });
-        document.getElementById('flash-effect').addEventListener('change', (e) => {
-            config.flashEffect = e.target.checked;
-        });
+    // Tên lửa pháo hoa bắn lên
+    class Shell {
+      constructor() {
+        this.x = Math.random() * (canvas.width * 0.8) + canvas.width * 0.1;
+        this.y = canvas.height;
+        this.targetY = Math.random() * (canvas.height * 0.45) + canvas.height * 0.1;
+        this.speed = Math.random() * 3 + 10;
+        this.color = colors[Math.floor(Math.random() * colors.length)];
+      }
 
-        // Quản lý hiệu ứng chớp sáng bầu trời
-        let skyFlashIntensity = 0;
-        function triggerSkyFlash(color) {
-            if (!config.flashEffect) return;
-            skyFlashIntensity = 0.15; // Độ sáng lóe lên
-            // Chuyển đổi màu sắc sang rgba mờ
-            document.body.style.backgroundColor = color;
-            setTimeout(() => {
-                document.body.style.backgroundColor = '#000000';
-            }, 50);
+      update() {
+        this.y -= this.speed;
+        if (this.y <= this.targetY) {
+          this.explode();
+          return true; // Xóa quả pháo đã nổ
         }
+        return false;
+      }
 
-        // Mảng màu sắc pháo hoa
-        const colors = [
-            '#ff3333', '#33ff33', '#3366ff', '#ffff33', '#ff33ff', '#33ffff', 
-            '#ff9933', '#ff99ff', '#99ff33', '#ffffff', '#ff69b4', '#00ffcc'
-        ];
+      draw() {
+        ctx.save();
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, 2.5, 0, Math.PI * 2);
+        ctx.fillStyle = this.color;
+        ctx.shadowBlur = 10;
+        ctx.shadowColor = this.color;
+        ctx.fill();
+        ctx.restore();
+      }
 
-        class Particle {
-            constructor(x, y, color, angle, speed, friction, gravity, size, alphaDecrease, shape = 'normal') {
-                this.x = x;
-                this.y = y;
-                this.color = color;
-                this.angle = angle;
-                this.speed = speed;
-                this.friction = friction;
-                this.gravity = gravity;
-                this.size = size;
-                this.alpha = 1;
-                this.alphaDecrease = alphaDecrease;
-                this.shape = shape;
-                this.vx = Math.cos(angle) * speed;
-                this.vy = Math.sin(angle) * speed;
-            }
+      explode() {
+        // Tạo hiệu ứng chớp sáng bầu trời khi nổ
+        ctx.save();
+        ctx.fillStyle = this.color;
+        ctx.globalAlpha = 0.12;
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.restore();
 
-            update() {
-                this.vx *= this.friction;
-                this.vy *= this.friction;
-                this.vy += this.gravity;
-                this.x += this.vx;
-                this.y += this.vy;
-                this.alpha -= this.alphaDecrease;
-            }
-
-            draw() {
-                ctx.save();
-                ctx.globalAlpha = Math.max(0, this.alpha);
-                ctx.fillStyle = this.color;
-                ctx.strokeStyle = this.color;
-
-                if (this.shape === 'heart') {
-                    // Vẽ hình trái tim
-                    ctx.beginPath();
-                    let t = this.size;
-                    ctx.moveTo(this.x, this.y);
-                    ctx.bezierCurveTo(this.x - t, this.y - t, this.x - t * 2, this.y + t / 2, this.x, this.y + t * 1.5);
-                    ctx.bezierCurveTo(this.x + t * 2, this.y + t / 2, this.x + t, this.y - t, this.x, this.y);
-                    ctx.fill();
-                } else {
-                    // Hình tròn tiêu chuẩn
-                    ctx.beginPath();
-                    ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
-                    ctx.fill();
-                }
-                ctx.restore();
-            }
+        // Nổ xòe từ 150 đến 220 hạt rực rỡ
+        const particleCount = Math.floor(Math.random() * 70) + 150;
+        for (let i = 0; i < particleCount; i++) {
+          const angle = Math.random() * Math.PI * 2;
+          // Tốc độ nổ tỏa rộng ngẫu nhiên tạo khối cầu đẹp
+          const speed = Math.random() * 9 + 1; 
+          particles.push(new Particle(this.x, this.y, this.color, angle, speed));
         }
+      }
+    }
 
-        class Firework {
-            constructor(startX, startY, targetX, targetY, color) {
-                this.x = startX;
-                this.y = startY;
-                this.startX = startX;
-                this.startY = startY;
-                this.targetX = targetX;
-                this.targetY = targetY;
-                this.color = color;
-                this.distanceToTarget = Math.hypot(targetX - startX, targetY - startY);
-                this.distanceTraveled = 0;
-                this.angle = Math.atan2(targetY - startY, targetX - startX);
-                this.speed = 12;
-                this.acceleration = 1.05;
-                this.particles = [];
-                this.status = 'launching'; // launching, exploded, dead
-            }
+    // Vòng lặp vẽ liên tục (Animation)
+    function loop() {
+      // Đuôi vệt mờ bằng cách phủ lớp mờ đen
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.18)';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-            update() {
-                if (this.status === 'launching') {
-                    this.speed *= this.acceleration;
-                    let vx = Math.cos(this.angle) * this.speed;
-                    let vy = Math.sin(this.angle) * this.speed;
-                    this.distanceTraveled = Math.hypot(this.x - this.startX, this.y - this.startY);
+      // Tự động thêm pháo hoa
+      if (Math.random() < 0.045) {
+        shells.push(new Shell());
+      }
 
-                    if (this.distanceTraveled >= this.distanceToTarget || this.y <= this.targetY) {
-                        this.explode();
-                        this.status = 'exploded';
-                    } else {
-                        this.x += vx;
-                        this.y += vy;
-                    }
-                } else if (this.status === 'exploded') {
-                    this.particles.forEach((p, index) => {
-                        p.update();
-                        if (p.alpha <= 0) {
-                            this.particles.splice(index, 1);
-                        }
-                    });
-                    if (this.particles.length === 0) {
-                        this.status = 'dead';
-                    }
-                }
-            }
-
-            draw() {
-                if (this.status === 'launching') {
-                    ctx.save();
-                    ctx.beginPath();
-                    ctx.arc(this.x, this.y, 2.5, 0, Math.PI * 2);
-                    ctx.fillStyle = this.color;
-                    ctx.shadowBlur = 8;
-                    ctx.shadowColor = this.color;
-                    ctx.fill();
-                    ctx.restore();
-                } else if (this.status === 'exploded') {
-                    this.particles.forEach(p => p.draw());
-                }
-            }
-
-            explode() {
-                // Tạo hiệu ứng chớp sáng bầu trời ứng với màu pháo hoa
-                triggerSkyFlash(this.color);
-
-                // Chọn ngẫu nhiên loại hình nổ phong phú
-                const types = ['circle', 'ring', 'heart', 'multi-layer', 'star'];
-                const selectedType = types[Math.floor(Math.random() * types.length)];
-                
-                const particleCount = 120;
-
-                if (selectedType === 'circle') {
-                    for (let i = 0; i < particleCount; i++) {
-                        const angle = (Math.PI * 2 / particleCount) * i;
-                        const speed = Math.random() * 6 + 2;
-                        this.particles.push(new Particle(this.targetX, this.targetY, this.color, angle, speed, 0.95, 0.08, Math.random() * 2 + 1, 0.015));
-                    }
-                } else if (selectedType === 'ring') {
-                    for (let i = 0; i < particleCount; i++) {
-                        const angle = (Math.PI * 2 / particleCount) * i;
-                        const speed = 5; // Tốc độ đều tạo vành khuyên
-                        this.particles.push(new Particle(this.targetX, this.targetY, this.color, angle, speed, 0.96, 0.05, 2, 0.02));
-                    }
-                } else if (selectedType === 'heart') {
-                    for (let i = 0; i < particleCount; i++) {
-                        const angle = Math.random() * Math.PI * 2;
-                        const speed = Math.random() * 4 + 1;
-                        this.particles.push(new Particle(this.targetX, this.targetY, this.color, angle, speed, 0.94, 0.04, 2.5, 0.015, 'heart'));
-                    }
-                } else if (selectedType === 'multi-layer') {
-                    // Nổ 2 lớp màu khác nhau
-                    const secondaryColor = colors[Math.floor(Math.random() * colors.length)];
-                    for (let i = 0; i < particleCount; i++) {
-                        const angle = (Math.PI * 2 / particleCount) * i;
-                        const speed = i % 2 === 0 ? Math.random() * 7 + 3 : Math.random() * 4 + 1;
-                        const col = i % 2 === 0 ? this.color : secondaryColor;
-                        this.particles.push(new Particle(this.targetX, this.targetY, col, angle, speed, 0.95, 0.07, 2, 0.018));
-                    }
-                } else {
-                    // Kiểu mưa sao băng rơi xuống
-                    for (let i = 0; i < particleCount; i++) {
-                        const angle = Math.random() * Math.PI * 2;
-                        const speed = Math.random() * 8 + 1;
-                        this.particles.push(new Particle(this.targetX, this.targetY, this.color, angle, speed, 0.92, 0.15, Math.random() * 2, 0.025));
-                    }
-                }
-            }
+      // Cập nhật & Vẽ pháo hoa bắn lên
+      for (let i = shells.length - 1; i >= 0; i--) {
+        shells[i].draw();
+        if (shells[i].update()) {
+          shells.splice(i, 1);
         }
+      }
 
-        let fireworks = [];
-
-        // Thêm pháo hoa tự động
-        let lastLaunchTime = 0;
-        function loop(timestamp) {
-            // Hiệu ứng lưu ảnh chuyển động mờ ảo (motion blur)
-            ctx.fillStyle = 'rgba(0, 0, 0, 0.2)';
-            ctx.fillRect(0, 0, width, height);
-
-            if (config.autoLaunch && timestamp - lastLaunchTime > 600) {
-                let startX = Math.random() * width;
-                let targetX = Math.random() * (width - 200) + 100;
-                let targetY = Math.random() * (height * 0.5) + 50;
-                let color = colors[Math.floor(Math.random() * colors.length)];
-                fireworks.push(new Firework(startX, height, targetX, targetY, color));
-                lastLaunchTime = timestamp;
-            }
-
-            fireworks.forEach((fw, index) => {
-                fw.update();
-                fw.draw();
-                if (fw.status === 'dead') {
-                    fireworks.splice(index, 1);
-                }
-            });
-
-            requestAnimationFrame(loop);
+      // Cập nhật & Vẽ các hạt nổ
+      for (let i = particles.length - 1; i >= 0; i--) {
+        particles[i].update();
+        particles[i].draw();
+        if (particles[i].alpha <= 0) {
+          particles.splice(i, 1);
         }
+      }
 
-        requestAnimationFrame(loop);
+      requestAnimationFrame(loop);
+    }
 
-        // Click hoặc chạm màn hình để bắn pháo hoa thủ công tại vị trí bấm
-        window.addEventListener('click', (e) => {
-            let startX = width / 2;
-            let targetX = e.clientX;
-            let targetY = e.clientY;
-            let color = colors[Math.floor(Math.random() * colors.length)];
-            fireworks.push(new Firework(startX, height, targetX, targetY, color));
-        });
-    </script>
+    // Nhấp chuột bất kỳ đâu để tạo thêm pháo hoa thủ công
+    window.addEventListener('click', (e) => {
+      const shell = new Shell();
+      shell.x = e.clientX;
+      shell.targetY = e.clientY;
+      shells.push(shell);
+    });
+
+    loop();
+  </script>
 </body>
 </html>
