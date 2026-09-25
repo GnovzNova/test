@@ -246,9 +246,9 @@
         MOON_GLOW_SIZE / 2, MOON_GLOW_SIZE / 2, 0,
         MOON_GLOW_SIZE / 2, MOON_GLOW_SIZE / 2, MOON_GLOW_SIZE / 2
       );
-      g.addColorStop(0, 'rgba(254, 240, 138, 0.22)');
-      g.addColorStop(0.20, 'rgba(254, 240, 138, 0.10)');
-      g.addColorStop(0.48, 'rgba(253, 224, 71, 0.035)');
+      g.addColorStop(0, 'rgba(255, 247, 170, 0.46)');
+      g.addColorStop(0.18, 'rgba(254, 240, 138, 0.24)');
+      g.addColorStop(0.42, 'rgba(253, 224, 71, 0.075)');
       g.addColorStop(1, 'rgba(253, 224, 71, 0)');
       gc.fillStyle = g;
       gc.fillRect(0, 0, MOON_GLOW_SIZE, MOON_GLOW_SIZE);
@@ -1024,7 +1024,7 @@
       launch(position, launchHeight) {
         const w = stageW;
         const h = stageH;
-        const hpad = 60;
+        const hpad = 24;
         const vpad = 50;
         const minHeight = h - h * 0.45;
         const launchX = position * (w - hpad * 2) + hpad;
@@ -1205,11 +1205,22 @@
       const variance = Math.random() * maxVariance;
       const size = base - variance;
       const height = maxVariance === 0 ? Math.random() : 1 - (variance / maxVariance);
-      const centerOffset = Math.random() * (1 - height * 0.65) * 0.5;
-      const x = Math.random() < 0.5 ? 0.5 - centerOffset : 0.5 + centerOffset;
+
+      // Spread launch/burst positions over the whole width, including both screen edges.
+      // Keep a substantial center share so the old composition is still recognizable.
+      const zone = Math.random();
+      let x;
+      if (zone < 0.30) {
+        x = Math.random() * 0.14 + 0.02;        // left edge
+      } else if (zone < 0.60) {
+        x = Math.random() * 0.14 + 0.84;        // right edge
+      } else {
+        x = Math.random() * 0.56 + 0.22;        // center / inner field
+      }
+
       return {
         size,
-        x: (1 - 0.36) * x + 0.18,
+        x: Math.max(0.01, Math.min(0.99, x)),
         height: height * 0.75
       };
     }
@@ -1230,10 +1241,10 @@
       const b = fwGetRandomShellSize();
       const left = new FWShell(FW_SHELLS[(Math.random() * FW_SHELLS.length) | 0](a.size));
       const right = new FWShell(FW_SHELLS[(Math.random() * FW_SHELLS.length) | 0](b.size));
-      left.launch(Math.min(0.43, a.x), a.height);
+      left.launch(0.03 + Math.random() * 0.15, a.height);
       setTimeout(() => {
         if (currentState === STATES.FIREWORKS_SHOW) {
-          right.launch(Math.max(0.57, b.x), b.height);
+          right.launch(0.82 + Math.random() * 0.15, b.height);
         }
       }, 110);
     }
@@ -1245,13 +1256,13 @@
       setTimeout(() => {
         if (currentState === STATES.FIREWORKS_SHOW) {
           const left = new FWShell(shellFactory(1.7));
-          left.launch(0.22 + Math.random() * 0.08, 0.22);
+          left.launch(0.04 + Math.random() * 0.14, 0.22);
         }
       }, 1000 + Math.random() * 280);
       setTimeout(() => {
         if (currentState === STATES.FIREWORKS_SHOW) {
           const right = new FWShell(shellFactory(1.7));
-          right.launch(0.78 - Math.random() * 0.08, 0.22);
+          right.launch(0.82 + Math.random() * 0.14, 0.22);
         }
       }, 1050 + Math.random() * 280);
     }
@@ -1471,12 +1482,20 @@
       if (moon.opacity > 0) {
         ctx.save();
 
-        const hoverTarget = (!moon.hoverLocked && moon.isHovered) ? 1 : 0;
-        moon.hoverAmount = (moon.hoverAmount || 0) + (hoverTarget - (moon.hoverAmount || 0)) * 0.08;
+        if (moon.hoverLocked) {
+          // Once clicked, hover is permanently disabled for this moon instance.
+          moon.isHovered = false;
+          moon.hoverAmount = 0;
+        } else {
+          const hoverTarget = moon.isHovered ? 1 : 0;
+          moon.hoverAmount = (moon.hoverAmount || 0) + (hoverTarget - (moon.hoverAmount || 0)) * 0.08;
+        }
         const currentR = moon.radius * (1 + moon.hoverAmount * 0.05);
 
         const glowDiameter = currentR * 3.6;
-        ctx.globalAlpha = moon.opacity * Math.min(0.28, moon.glowOpacity + moon.hoverAmount * 0.04);
+        // Keep the wake/final glow clearly visible while retaining the soft look.
+        const glowStrength = Math.min(0.68, 0.20 + moon.glowOpacity * 0.85 + moon.hoverAmount * 0.10);
+        ctx.globalAlpha = moon.opacity * glowStrength;
         ctx.drawImage(
           moonGlowSprite,
           moon.x - glowDiameter / 2,
@@ -1540,7 +1559,7 @@
 
         if (currentState === STATES.WAITING_LANTERNS_CLEAR && lanterns.length === 0) {
           currentState = STATES.MOON_GLOWING_UP;
-          moon.glowOpacity = 0.20;
+          moon.glowOpacity = 0.55;
         }
       }
 
