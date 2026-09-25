@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Tặng Em Bé Mặt Trăng Nhỏ 🌕✨</title>
+  <title>Tặng Em Bé!</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Dancing+Script:wght@600;700&family=Quicksand:wght@400;500;600;700&display=swap');
@@ -498,6 +498,21 @@
       }
     });
 
+    function enterFullscreen() {
+      const el = document.documentElement;
+      try {
+        if (document.fullscreenElement || document.webkitFullscreenElement) return;
+        const request = el.requestFullscreen || el.webkitRequestFullscreen || el.msRequestFullscreen;
+        if (request) {
+          const result = request.call(el);
+          if (result && typeof result.catch === 'function') result.catch(() => {});
+        }
+      } catch (_) {}
+    }
+
+    document.addEventListener('fullscreenchange', resize);
+    document.addEventListener('webkitfullscreenchange', resize);
+
     canvas.addEventListener('click', (e) => {
       if (activeCardOpen) return;
 
@@ -518,6 +533,10 @@
           moon.hoverLocked = true;
           moon.isHovered = false;
           moon.hoverAmount = 0;
+
+          // The first Moon click is a direct user gesture, so use it to enter fullscreen.
+          enterFullscreen();
+
           currentState = STATES.INTERACTIVE_SKY;
           spawnLanterns();
         }
@@ -591,12 +610,12 @@
 
       await sleep(2000);
 
-      // 30s automatic fireworks show. No click launches fireworks.
+      // 30s automatic fireworks show: about 20 rockets are launched per volley.
       currentState = STATES.FIREWORKS_SHOW;
       fwLaneCursor = 0;
       clearFireworkEngine();
       fireworkShowTick();
-      const fireworkInterval = setInterval(fireworkShowTick, 760);
+      const fireworkInterval = setInterval(fireworkShowTick, 1850);
 
       await sleep(30000);
       clearInterval(fireworkInterval);
@@ -1275,15 +1294,18 @@
       }, 300);
     }
 
+    const FIREWORK_BATCH_SIZE = 20;
+
     function fireworkShowTick() {
       if (currentState !== STATES.FIREWORKS_SHOW) return;
-      const r = Math.random();
-      if (r < 0.55) {
-        launchRandomFirework();
-      } else if (r < 0.82) {
-        launchFireworkPair();
-      } else {
-        launchFireworkTriple();
+
+      // One volley = ~20 rockets, spread across the full width.
+      // Small stagger keeps them readable instead of detonating at exactly the same instant.
+      for (let i = 0; i < FIREWORK_BATCH_SIZE; i++) {
+        setTimeout(() => {
+          if (currentState !== STATES.FIREWORKS_SHOW) return;
+          launchRandomFirework();
+        }, i * 38);
       }
     }
 
